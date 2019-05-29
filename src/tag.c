@@ -1,7 +1,7 @@
 #include "al2o3_platform/platform.h"
 #include "al2o3_memory/memory.h"
-#include "gfx_meshmod/cvector.h"
-#include "gfx_meshmod/cdict.h"
+#include "al2o3_cadt/vector.h"
+#include "al2o3_cadt/dict.h"
 #include "gfx_meshmod/tag.h"
 
 typedef struct MeshMod_TagRegistryItem {
@@ -10,8 +10,8 @@ typedef struct MeshMod_TagRegistryItem {
 } MeshMod_TagRegistryItem;
 
 typedef struct MeshMod_TagRegistry {
-	MeshMod_CVectorHandle registry;
-	MeshMod_CDictU64Handle tagDictionary;
+	CADT_VectorHandle registry;
+	CADT_DictU64Handle tagDictionary;
 } MeshMod_TagRegistry;
 
 AL2O3_EXTERN_C MeshMod_TagRegistryHandle MeshMod_TagRegistryCreate() {
@@ -19,14 +19,14 @@ AL2O3_EXTERN_C MeshMod_TagRegistryHandle MeshMod_TagRegistryCreate() {
 	if (reg == NULL)
 		return NULL;
 
-	reg->registry = MeshMod_CVectorCreate(sizeof(MeshMod_TagRegistryItem));
+	reg->registry = CADT_VectorCreate(sizeof(MeshMod_TagRegistryItem));
 	if (reg->registry == NULL) {
 		MEMORY_FREE(reg);
 		return NULL;
 	}
-	reg->tagDictionary = MeshMod_CDictU64Create();
+	reg->tagDictionary = CADT_DictU64Create();
 	if (reg->tagDictionary == NULL) {
-		MeshMod_CVectorDestroy(reg->registry);
+		CADT_VectorDestroy(reg->registry);
 		MEMORY_FREE(reg);
 	}
 
@@ -37,13 +37,13 @@ AL2O3_EXTERN_C void MeshMod_TagRegistryDestroy(MeshMod_TagRegistryHandle handle)
 	ASSERT(handle);
 	MeshMod_TagRegistry *reg = (MeshMod_TagRegistry *) handle;
 
-	for (size_t i = 0; i < MeshMod_CVectorSizeFrom(reg->registry); ++i) {
-		MeshMod_TagRegistryItem *item = MeshMod_CVectorElementFrom(reg->registry, i);
+	for (size_t i = 0; i < CADT_VectorSizeFrom(reg->registry); ++i) {
+		MeshMod_TagRegistryItem *item = CADT_VectorElementFrom(reg->registry, i);
 		MEMORY_FREE((void *) item->description);
 	}
 
-	MeshMod_CDictU64Destroy(reg->tagDictionary);
-	MeshMod_CVectorDestroy(reg->registry);
+	CADT_DictU64Destroy(reg->tagDictionary);
+	CADT_VectorDestroy(reg->registry);
 	MEMORY_FREE(reg);
 }
 
@@ -62,42 +62,42 @@ AL2O3_EXTERN_C void MeshMod_TagRegistryAddTag(MeshMod_TagRegistryHandle handle,
 			str
 	};
 
-	size_t index = MeshMod_CVectorPushElement(reg->registry, &item);
-	bool okay = MeshMod_CDictU64Add(reg->tagDictionary, tag, (uint32_t) index);
+	size_t index = CADT_VectorPushElement(reg->registry, &item);
+	bool okay = CADT_DictU64Add(reg->tagDictionary, tag, (uint32_t) index);
 	ASSERT(okay);
 }
 AL2O3_EXTERN_C bool MeshMod_TagRegistryTagExists(MeshMod_TagRegistryHandle handle, MeshMod_Tag tag) {
 	ASSERT(handle);
 	MeshMod_TagRegistry *reg = (MeshMod_TagRegistry *) handle;
-	return MeshMod_CDictU64KeyExists(reg->tagDictionary, tag);
+	return CADT_DictU64KeyExists(reg->tagDictionary, tag);
 }
 
 AL2O3_EXTERN_C size_t MeshMod_TagRegistryDataSize(MeshMod_TagRegistryHandle handle, MeshMod_Tag tag) {
 	ASSERT(handle);
 	MeshMod_TagRegistry *reg = (MeshMod_TagRegistry *) handle;
-	ASSERT(MeshMod_CDictU64KeyExists(reg->tagDictionary, tag));
+	ASSERT(CADT_DictU64KeyExists(reg->tagDictionary, tag));
 
 	uint64_t index = 0;
-	bool okay = MeshMod_CDictU64Lookup(reg->tagDictionary, tag, &index);
+	bool okay = CADT_DictU64Lookup(reg->tagDictionary, tag, &index);
 	if (!okay)
 		return 0;
 
-	ASSERT(index < MeshMod_CVectorSizeFrom(reg->registry));
-	MeshMod_TagRegistryItem *item = MeshMod_CVectorElementFrom(reg->registry, index);
+	ASSERT(index < CADT_VectorSizeFrom(reg->registry));
+	MeshMod_TagRegistryItem *item = CADT_VectorElementFrom(reg->registry, index);
 	return item->dataSize;
 }
 AL2O3_EXTERN_C char const *MeshMod_TagRegistryDescription(MeshMod_TagRegistryHandle handle,
 																													MeshMod_Tag tag) {
 	ASSERT(handle);
 	MeshMod_TagRegistry *reg = (MeshMod_TagRegistry *) handle;
-	ASSERT(MeshMod_CDictU64KeyExists(reg->tagDictionary, tag));
+	ASSERT(CADT_DictU64KeyExists(reg->tagDictionary, tag));
 
 	uint64_t index = 0;
-	bool okay = MeshMod_CDictU64Lookup(reg->tagDictionary, tag, &index);
+	bool okay = CADT_DictU64Lookup(reg->tagDictionary, tag, &index);
 	if (!okay)
 		return NULL;
 
-	ASSERT(index < MeshMod_CVectorSizeFrom(reg->registry));
-	MeshMod_TagRegistryItem *item = MeshMod_CVectorElementFrom(reg->registry, index);
+	ASSERT(index < CADT_VectorSizeFrom(reg->registry));
+	MeshMod_TagRegistryItem *item = CADT_VectorElementFrom(reg->registry, index);
 	return item->description;
 }

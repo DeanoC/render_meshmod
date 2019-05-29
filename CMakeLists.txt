@@ -13,9 +13,6 @@ set(LibName gfx_meshmod)
 project(${LibName})
 
 set(Interface
-		cvector.h
-		cdict.h
-		cbagofvectors.h
 		tag.h
 		meshmod.h
 		vertexarray.h
@@ -51,9 +48,6 @@ set(Interface
 		)
 
 set(Src
-		cvector.c
-		cdict.c
-		cbagofvectors.c
 		tag.c
 		meshmod.cpp
 #		halfedges.cpp
@@ -67,6 +61,7 @@ set(Src
 set(Deps
 		al2o3_platform
 		al2o3_memory
+		al2o3_cadt
 		al2o3_cmath
 		al2o3_vfile
 		al2o3_stb
@@ -76,9 +71,6 @@ ADD_LIB(${LibName} "${Interface}" "${Src}" "${Deps}")
 
 set( Tests
 		runner.cpp
-		test_cvector.cpp
-		test_cdict.cpp
-		test_cbagofvectors.cpp
 		test_tag.cpp
 		)
 set( TestDeps
