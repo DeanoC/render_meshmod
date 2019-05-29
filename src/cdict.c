@@ -28,7 +28,15 @@ AL2O3_EXTERN_C size_t MeshMod_CDict##postfix##Capacity(MeshMod_CDict##postfix##H
 AL2O3_EXTERN_C type MeshMod_CDict##postfix##GetByIndex(MeshMod_CDict##postfix##Handle handle, size_t index) {\
 	ASSERT(handle); \
 	stb_dict##postfix const * dict = (stb_dict##postfix const *) handle; \
-	return dict->table[index].v; \
+	size_t count = 0; \
+	for (size_t i = 0; i < dict->limit; ++i) { \
+		if (dict->table[i].k != -1l) { \
+			if (count == index) \
+				return dict->table[i].v; \
+			else \
+				count++; \
+		}	\
+	} \
 } \
 AL2O3_EXTERN_C void MeshMod_CDict##postfix##Reserve(MeshMod_CDict##postfix##Handle handle, size_t const size) { \
 	ASSERT(handle); \

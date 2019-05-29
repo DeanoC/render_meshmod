@@ -7,6 +7,8 @@
 
 typedef struct MeshMod_CBagOfVectors {
 	MeshMod_CDictU64Handle tagDictHandle;
+	// destroy could be much faster we hold a vector of vectors and just
+	// store the index in the dictionary.
 } MeshMod_CBagOfVectors;
 
 
@@ -28,6 +30,8 @@ AL2O3_EXTERN_C void MeshMod_CBagOfVectorsDestroy(MeshMod_CBagOfVectorsHandle han
 	ASSERT(handle);
 	MeshMod_CBagOfVectors* tvec = (MeshMod_CBagOfVectors*) handle;
 
+	// note this is v.slow for large size dictionary
+	// GetByIndex linear walks the dictionary for each index it gets
 	for(size_t i = 0; i < MeshMod_CDictU64Size(tvec->tagDictHandle);i++) {
 		MeshMod_CVectorHandle vh = (MeshMod_CVectorHandle)MeshMod_CDictU64GetByIndex(tvec->tagDictHandle, i);
 		MeshMod_CVectorDestroy(vh);
@@ -43,9 +47,13 @@ AL2O3_EXTERN_C MeshMod_CVectorHandle MeshMod_CBagOfVectorsAdd(MeshMod_CBagOfVect
 	MeshMod_CBagOfVectors* tvec = (MeshMod_CBagOfVectors*) handle;
 	ASSERT(tvec->tagDictHandle);
 	MeshMod_CVectorHandle vh = MeshMod_CVectorCreate(elementSize);
-	MeshMod_CDictU64Add(tvec->tagDictHandle, key, (uint64_t)vh);
+	bool okay = MeshMod_CDictU64Add(tvec->tagDictHandle, key, (uint64_t)vh);
+	if (okay) return vh;
+	else {
+		MeshMod_CVectorDestroy(vh);
+		return NULL;
+	}
 
-	return vh;
 }
 
 AL2O3_EXTERN_C void MeshMod_CBagOfVectorsOwnVector(MeshMod_CBagOfVectorsHandle handle, uint64_t key, MeshMod_CVectorHandle vector) {

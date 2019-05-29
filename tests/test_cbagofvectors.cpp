@@ -16,11 +16,11 @@ TEST_CASE("MeshMod_CBagOfVectors add/exists", "[MeshMod MeshMod_CBagOfVectors]")
 	MeshMod_CBagOfVectorsAdd(handle,
 														TestTag | '0',
 														10);
-//	REQUIRE( MeshMod_CBagOfVectorsKeyExists(handle, TestTag | '0' ));
-//	MeshMod_CBagOfVectorsAdd(handle,
-//														TestTag | '1',
-//														20);
-//	REQUIRE( MeshMod_CBagOfVectorsKeyExists(handle, TestTag | '1' ));
+	REQUIRE( MeshMod_CBagOfVectorsKeyExists(handle, TestTag | '0' ));
+	MeshMod_CBagOfVectorsAdd(handle,
+														TestTag | '1',
+														20);
+	REQUIRE( MeshMod_CBagOfVectorsKeyExists(handle, TestTag | '1' ));
 
 	MeshMod_CBagOfVectorsDestroy(handle);
 }
