@@ -37,6 +37,7 @@ AL2O3_EXTERN_C type MeshMod_CDict##postfix##GetByIndex(MeshMod_CDict##postfix##H
 				count++; \
 		}	\
 	} \
+	return 0; \
 } \
 AL2O3_EXTERN_C void MeshMod_CDict##postfix##Reserve(MeshMod_CDict##postfix##Handle handle, size_t const size) { \
 	ASSERT(handle); \
