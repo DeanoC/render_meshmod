@@ -7,7 +7,7 @@ TEST_CASE("TagRegistry create/destroy", "[MeshMod Tag]") {
 	MeshMod_TagRegistryDestroy(handle);
 }
 
-static const MeshMod_Tag TestTag = MESHMOD_TAG('T','E','S','T', '0', '0', '0', 0);
+static const MeshMod_Tag TestTag = MESHMOD_TAG('T','E','S','T', '0', '0');
 
 TEST_CASE("TagRegistry add/exists", "[MeshMod Tag]") {
 	MeshMod_TagRegistryHandle handle = MeshMod_TagRegistryCreate();

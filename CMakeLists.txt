@@ -49,7 +49,7 @@ set(Interface
 
 set(Src
 		tag.c
-		meshmod.cpp
+		mesh.c		
 #		halfedges.cpp
 #		mesh.cpp
 #		polygons.cpp

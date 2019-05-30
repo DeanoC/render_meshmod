@@ -3,14 +3,13 @@
 #define GFX_MESHMOD_MESHMOD_H
 
 #include "al2o3_platform/platform.h"
+#include "al2o3_cadt/bagofvectors.h"
 
-typedef void* MeshMod_MeshHandle;
+typedef struct MeshMod_Mesh *MeshMod_MeshHandle;
 
-typedef void* MeshMod_EdgeArrayContainerHandle;
-typedef void *MeshMod_VertexArrayContainerHandle;
-typedef void *MeshMod_PolygonArrayContainerHandle;
+typedef struct MeshMod_DataContainer* MeshMod_DataContainerHandle;
 
-typedef size_t MeshMod_VertexIndex ;
+typedef size_t MeshMod_VertexIndex;
 typedef size_t MeshMod_EdgeIndex;
 typedef size_t MeshMod_PolygonIndex;
 

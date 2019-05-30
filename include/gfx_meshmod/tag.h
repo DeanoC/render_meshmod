@@ -4,13 +4,13 @@
 
 #include "al2o3_platform/platform.h"
 
+// the bottom two bytes of a tag are not used by the registry and can be used to hold user data
 typedef uint64_t MeshMod_Tag;
 
-#define MESHMOD_TAG(a, b, c, d, e, f, g, version) (MeshMod_Tag)( \
-		(uint64_t)(a) << 56 | (uint64_t)(b) << 48 | (uint64_t)(c) << 40 | (uint64_t)(d) << 32 | \
-		(uint64_t)(e) << 24 | (uint64_t)(f) << 16 | (uint64_t)(g) << 8 | (uint64_t)(version) << 0 )
+#define MESHMOD_TAG(a, b, c, d, e, f) (MeshMod_Tag)( \
+		(uint64_t)(a) << 56 | (uint64_t)(b) << 48 | (uint64_t)(c) << 40 | (uint64_t)(d) << 32 | (uint64_t)(e) << 24 | (uint64_t)(f) << 16)
 
-typedef void* MeshMod_TagRegistryHandle;
+typedef struct MeshMod_TagRegistry *MeshMod_TagRegistryHandle;
 AL2O3_EXTERN_C MeshMod_TagRegistryHandle MeshMod_TagRegistryCreate();
 AL2O3_EXTERN_C void MeshMod_TagRegistryDestroy(MeshMod_TagRegistryHandle handle);
 AL2O3_EXTERN_C void MeshMod_TagRegistryAddTag(
