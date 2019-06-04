@@ -13,10 +13,13 @@ set(LibName gfx_meshmod)
 project(${LibName})
 
 set(Interface
-		tag.h
+		registry.h
 		meshmod.h
-		vertexarray.h
 		mesh.h
+		datacontainer.h
+		vertex/position.h
+		edge/halfedge.h
+		polygon/tribrep.h
 #		halfedgedata/halfedgecontainers.h
 #		halfedgedata/halfedgedata.h
 #		materialparameterdata/materialparameter.h
@@ -48,8 +51,15 @@ set(Interface
 		)
 
 set(Src
-		tag.c
-		mesh.c		
+		registry.c
+		mesh.c
+		datacontainer.c
+		vertex/default.c
+		vertex/position.c
+		edge/default.c
+		edge/halfedge.c
+		polygon/default.c
+		polygon/tribrep.c
 #		halfedges.cpp
 #		mesh.cpp
 #		polygons.cpp
@@ -72,6 +82,8 @@ ADD_LIB(${LibName} "${Interface}" "${Src}" "${Deps}")
 set( Tests
 		runner.cpp
 		test_tag.cpp
+		test_datacontainer.cpp
+		test_mesh.cpp
 		)
 set( TestDeps
 		utils_simple_logmanager

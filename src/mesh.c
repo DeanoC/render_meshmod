@@ -1,30 +1,32 @@
 #include "al2o3_platform/platform.h"
 #include "al2o3_memory/memory.h"
 #include "al2o3_cadt/bagofvectors.h"
+#include "gfx_meshmod/datacontainer.h"
 #include "gfx_meshmod/mesh.h"
 
-static uint8_t const MeshMod_ContainerType_Vertex = 0;
-static uint8_t const MeshMod_ContainerType_Edge = 1;
-static uint8_t const MeshMod_ContainerType_Polygon = 2;
-
-typedef struct MeshMod_DataContainer {
-	uint8_t containerType;
-	CADT_BagOfVectorsHandle data;
-	size_t elementCount;
-	struct MeshMod_Mesh* owner;
-} MeshMod_DataContainer;
-
 typedef struct MeshMod_Mesh {
-	MeshMod_TagRegistryHandle registry;
+	MeshMod_RegistryHandle registry;
+	bool ownRegistry;
 	char const * name;
 
-	MeshMod_DataContainer vertices;
-	MeshMod_DataContainer edges;
-	MeshMod_DataContainer polygons;
+	MeshMod_DataContainerHandle vertices;
+	MeshMod_DataContainerHandle edges;
+	MeshMod_DataContainerHandle polygons;
 } MeshMod_Mesh;
 
+AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshCreateWithDefaultRegistry(char const* name) {
+	MeshMod_RegistryHandle registryHandle = MeshMod_RegistryCreateWithDefaults();
+	MeshMod_MeshHandle meshh = MeshMod_MeshCreate(registryHandle, name);
+	if (meshh == NULL) {
+		MeshMod_RegistryDestroy(registryHandle);
+		return NULL;
+	}
+	MeshMod_Mesh* mesh = (MeshMod_Mesh*)meshh;
+	mesh->ownRegistry = true;
+	return mesh;
+}
 
-AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshCreate(MeshMod_TagRegistryHandle registry, char const* name) {
+AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshCreate(MeshMod_RegistryHandle registry, char const* name) {
 	ASSERT(name);
 
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*)MEMORY_MALLOC(sizeof(MeshMod_Mesh));
@@ -33,21 +35,10 @@ AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshCreate(MeshMod_TagRegistryHandle r
 	if(mesh->name == NULL) return NULL;
 	strcpy((char*)mesh->name, name);
 	mesh->registry = registry;
-
-	mesh->vertices.data = CADT_BagOfVectorsCreate();
-	mesh->vertices.owner = mesh;
-	mesh->vertices.containerType = MeshMod_ContainerType_Vertex;
-	mesh->vertices.elementCount = 0;
-	
-	mesh->edges.data = CADT_BagOfVectorsCreate();
-	mesh->edges.owner = mesh;
-	mesh->edges.containerType = MeshMod_ContainerType_Edge;
-	mesh->edges.elementCount = 0;
-	
-	mesh->polygons.data = CADT_BagOfVectorsCreate();
-	mesh->polygons.owner = mesh;
-	mesh->polygons.containerType = MeshMod_ContainerType_Polygon;
-	mesh->polygons.elementCount = 0;
+	mesh->ownRegistry = false;
+	mesh->vertices = MeshMod_DataContainerCreate(mesh, MeshMod_TypeVertex);
+	mesh->edges = MeshMod_DataContainerCreate(mesh, MeshMod_TypeEdge);
+	mesh->polygons = MeshMod_DataContainerCreate(mesh, MeshMod_TypePolygon);
 
 	return mesh;
 }
@@ -57,35 +48,55 @@ AL2O3_EXTERN_C void MeshMod_MeshDestroy(MeshMod_MeshHandle handle) {
 
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*)handle;
 
-	CADT_BagOfVectorsDestroy(mesh->polygons.data);
-	CADT_BagOfVectorsDestroy(mesh->edges.data);
-	CADT_BagOfVectorsDestroy(mesh->vertices.data);
+	MeshMod_DataContainerDestroy(mesh->polygons);
+	MeshMod_DataContainerDestroy(mesh->edges);
+	MeshMod_DataContainerDestroy(mesh->vertices);
+
+	if (mesh->ownRegistry) {
+		MeshMod_RegistryDestroy(mesh->registry);
+	}
 
 	MEMORY_FREE((void*)mesh->name);
 	MEMORY_FREE(mesh);
 }
 
-AL2O3_EXTERN_C MeshMod_DataContainerHandle MeshMod_GetVertices(MeshMod_MeshHandle handle) {
+AL2O3_EXTERN_C MeshMod_RegistryHandle MeshMod_MeshGetRegistry(MeshMod_MeshHandle handle) {
 	ASSERT(handle);
-	MeshMod_Mesh * mesh = (MeshMod_Mesh *)handle;
-	return &mesh->vertices;
-}
-AL2O3_EXTERN_C MeshMod_DataContainerHandle MeshMod_GetEdges(MeshMod_MeshHandle handle) {
-	ASSERT(handle);
-	MeshMod_Mesh * mesh = (MeshMod_Mesh *)handle;
-	return &mesh->edges;
-}
-AL2O3_EXTERN_C MeshMod_DataContainerHandle MeshMod_GetPolygons(MeshMod_MeshHandle handle) {
-	ASSERT(handle);
-	MeshMod_Mesh * mesh = (MeshMod_Mesh *)handle;
-	return &mesh->polygons;
+	MeshMod_Mesh* mesh = (MeshMod_Mesh*)handle;
+	return mesh->registry;
 }
 
-AL2O3_EXTERN_C bool MeshMod_DataContainerAddNewContainer(MeshMod_DataContainerHandle handle, MeshMod_Tag tag) {
+AL2O3_EXTERN_C MeshMod_DataContainerHandle MeshMod_MeshGetVertices(MeshMod_MeshHandle handle) {
 	ASSERT(handle);
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
-	MeshMod_Mesh* mesh = (MeshMod_Mesh*)dc->owner;
-	ASSERT(MeshMod_TagRegistryTagExists(mesh->registry, tag));
-	size_t const elementSize = MeshMod_TagRegistryDataSize(mesh->registry, tag);
-	return CADT_BagOfVectorsAdd(dc->data, tag, elementSize);
+	MeshMod_Mesh * mesh = (MeshMod_Mesh *)handle;
+	return mesh->vertices;
+}
+AL2O3_EXTERN_C MeshMod_DataContainerHandle MeshMod_MeshGetEdges(MeshMod_MeshHandle handle) {
+	ASSERT(handle);
+	MeshMod_Mesh * mesh = (MeshMod_Mesh *)handle;
+	return mesh->edges;
+}
+AL2O3_EXTERN_C MeshMod_DataContainerHandle MeshMod_MeshGetPolygons(MeshMod_MeshHandle handle) {
+	ASSERT(handle);
+	MeshMod_Mesh * mesh = (MeshMod_Mesh *)handle;
+	return mesh->polygons;
+}
+
+AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshClone(MeshMod_MeshHandle handle) {
+	ASSERT(handle);
+	MeshMod_Mesh* omesh = (MeshMod_Mesh*)handle;
+	MeshMod_Mesh* nmesh = NULL;
+	if (omesh->ownRegistry == true) {
+		// TODO there is a bug here if ownedRegistry registry has been modified.
+		nmesh = MeshMod_MeshCreateWithDefaultRegistry(omesh->name);
+	}
+	else {
+		nmesh = MeshMod_MeshCreate(MeshMod_MeshGetRegistry(omesh), omesh->name);
+	}
+	if (nmesh == NULL) return NULL;
+
+	nmesh->vertices = MeshMod_DataContainerClone(omesh->vertices, nmesh);
+	nmesh->edges = MeshMod_DataContainerClone(omesh->edges, nmesh);
+	nmesh->polygons = MeshMod_DataContainerClone(omesh->polygons, nmesh);
+	return nmesh;
 }
