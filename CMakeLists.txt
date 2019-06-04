@@ -17,6 +17,7 @@ set(Interface
 		meshmod.h
 		mesh.h
 		datacontainer.h
+		vertex/basicdata.h
 		vertex/position.h
 		edge/halfedge.h
 		polygon/tribrep.h
@@ -54,6 +55,7 @@ set(Src
 		registry.c
 		mesh.c
 		datacontainer.c
+		vertex/basicdata.c
 		vertex/default.c
 		vertex/position.c
 		edge/default.c

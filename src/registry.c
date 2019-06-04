@@ -8,7 +8,7 @@
 extern void MeshMod_AddVertexDefaultsToTagRegistry(MeshMod_RegistryHandle handle);
 extern void MeshMod_AddEdgeDefaultsToTagRegistry(MeshMod_RegistryHandle handle);
 extern void MeshMod_AddPolygonDefaultsToTagRegistry(MeshMod_RegistryHandle handle);
-
+static uint64_t const UserDataMask = 0x00000000000FFFF;
 typedef struct MeshMod_RegistryItem {
 	MeshMod_Type type;
 	size_t elementSize;
@@ -17,6 +17,7 @@ typedef struct MeshMod_RegistryItem {
 	MeshMod_RegistryCommonFunctionTable* commonFunctionTable;
 
 	union {
+		void* functionTable;
 		MeshMod_RegistryVertexFunctionTable* vertexFunctionTable;
 		MeshMod_RegistryEdgeFunctionTable* edgeFunctionTable;
 		MeshMod_RegistryPolygonFunctionTable* polygonFunctionTable;
@@ -32,11 +33,11 @@ typedef struct MeshMod_Registry {
 static MeshMod_RegistryItem* LookupRegistryItem(MeshMod_RegistryHandle handle, MeshMod_Tag tag) {
 	ASSERT(handle);
 	MeshMod_Registry* reg = (MeshMod_Registry*)handle;
-	ASSERT(CADT_DictU64KeyExists(reg->tagDictionary, tag & ~0xFFU));
+	ASSERT(CADT_DictU64KeyExists(reg->tagDictionary, tag & ~UserDataMask));
 
 	uint64_t index = 0;
-	bool okay = CADT_DictU64Lookup(reg->tagDictionary, tag & ~0xFFU, &index);
-	if (!okay)
+	bool okayLookupReg = CADT_DictU64Lookup(reg->tagDictionary, tag & ~UserDataMask, &index);
+	if (!okayLookupReg)
 		return 0;
 
 	ASSERT(index < CADT_VectorSize(reg->registry));
@@ -72,7 +73,6 @@ AL2O3_EXTERN_C MeshMod_RegistryHandle MeshMod_RegistryCreateWithDefaults() {
 	return handle;
 }
 
-
 AL2O3_EXTERN_C void MeshMod_RegistryDestroy(MeshMod_RegistryHandle handle) {
 	ASSERT(handle);
 	MeshMod_Registry* reg = (MeshMod_Registry*)handle;
@@ -82,67 +82,29 @@ AL2O3_EXTERN_C void MeshMod_RegistryDestroy(MeshMod_RegistryHandle handle) {
 	MEMORY_FREE(reg);
 }
 
-AL2O3_EXTERN_C void MeshMod_RegistryAddVertexType(MeshMod_RegistryHandle handle,
-																									MeshMod_Tag tag,
-																									size_t elementSize,
-																									MeshMod_RegistryCommonFunctionTable* commonFunctionTable,
-																									MeshMod_RegistryVertexFunctionTable* vertexFunctionTable) {
+AL2O3_EXTERN_C void MeshMod_RegistryAddType(	MeshMod_RegistryHandle handle,
+																							MeshMod_Tag tag,
+																							size_t elementSize,
+																							MeshMod_RegistryCommonFunctionTable* commonFunctionTable,
+																							void* functionTable) {
 	ASSERT(handle);
 	MeshMod_Registry* reg = (MeshMod_Registry*)handle;
 
 	MeshMod_RegistryItem item;
-	item.type = MeshMod_TypeVertex;
+	item.type = (MeshMod_Type)(tag >> 56);
 	item.elementSize = elementSize;
 	item.commonFunctionTable = commonFunctionTable;
-	item.vertexFunctionTable = vertexFunctionTable;
+	item.functionTable = functionTable;
 
 	size_t index = CADT_VectorPushElement(reg->registry, &item);
-	bool okay = CADT_DictU64Add(reg->tagDictionary, tag & ~0xFFU, (uint32_t)index);
-	ASSERT(okay);
-}
-
-AL2O3_EXTERN_C void MeshMod_RegistryAddEdgeType(MeshMod_RegistryHandle handle,
-																								MeshMod_Tag tag,
-																								size_t elementSize,
-																								MeshMod_RegistryCommonFunctionTable* commonFunctionTable,
-																								MeshMod_RegistryEdgeFunctionTable* edgeFunctionTable) {
-	ASSERT(handle);
-	MeshMod_Registry* reg = (MeshMod_Registry*)handle;
-
-	MeshMod_RegistryItem item;
-	item.type = MeshMod_TypeEdge;
-	item.elementSize = elementSize;
-	item.commonFunctionTable = commonFunctionTable;
-	item.edgeFunctionTable = edgeFunctionTable;
-
-	size_t index = CADT_VectorPushElement(reg->registry, &item);
-	bool okay = CADT_DictU64Add(reg->tagDictionary, tag & ~0xFFU, (uint32_t)index);
-	ASSERT(okay);
-}
-
-AL2O3_EXTERN_C void MeshMod_RegistryAddPolygonType(	MeshMod_RegistryHandle handle,
-																										MeshMod_Tag tag,
-																										size_t elementSize,
-																										MeshMod_RegistryCommonFunctionTable* commonFunctionTable,
-																										MeshMod_RegistryPolygonFunctionTable* polygonFunctionTable) {
-	ASSERT(handle);
-	MeshMod_Registry* reg = (MeshMod_Registry*)handle;
-
-	MeshMod_RegistryItem item;
-	item.type = MeshMod_TypePolygon;
-	item.elementSize = elementSize;
-	item.commonFunctionTable = commonFunctionTable;
-	item.polygonFunctionTable = polygonFunctionTable;
-
-	size_t index = CADT_VectorPushElement(reg->registry, &item);
-	bool okay = CADT_DictU64Add(reg->tagDictionary, tag & ~0xFFU, (uint32_t)index);
-	ASSERT(okay);
+	bool okayAddType = CADT_DictU64Add(reg->tagDictionary, tag & ~UserDataMask, (uint64_t)index);
+	ASSERT(okayAddType);
 }
 
 AL2O3_EXTERN_C bool MeshMod_RegistryExists(MeshMod_RegistryHandle handle, MeshMod_Tag tag) {
 	ASSERT(handle);
 	MeshMod_Registry* reg = (MeshMod_Registry*)handle;
-	return CADT_DictU64KeyExists(reg->tagDictionary, tag & ~0xFFU);
+	return CADT_DictU64KeyExists(reg->tagDictionary, tag & ~UserDataMask);
 }
 
 AL2O3_EXTERN_C size_t MeshMod_RegistryElementSize(MeshMod_RegistryHandle handle, MeshMod_Tag tag) {
@@ -165,4 +127,15 @@ AL2O3_EXTERN_C char const* MeshMod_RegistryDescription(MeshMod_RegistryHandle ha
 AL2O3_EXTERN_C void const* MeshMod_RegistryDefaultData(MeshMod_RegistryHandle handle, MeshMod_Tag tag) {
 	MeshMod_RegistryItem* item = LookupRegistryItem(handle, tag);
 	return item->commonFunctionTable->defaultDataFunc();
+}
+
+AL2O3_EXTERN_C MeshMod_RegistryCommonFunctionTable* MeshMod_RegistryGetCommonFunctionTable(MeshMod_RegistryHandle handle, MeshMod_Tag tag) {
+	MeshMod_RegistryItem* item = LookupRegistryItem(handle, tag);
+	return item->commonFunctionTable;
+}
+
+AL2O3_EXTERN_C void* MeshMod_RegistryFunctionTable(MeshMod_RegistryHandle handle, MeshMod_Tag tag, MeshMod_Type type) {
+	MeshMod_RegistryItem* item = LookupRegistryItem(handle, tag);
+	ASSERT(type == item->type);
+	return item->functionTable;
 }

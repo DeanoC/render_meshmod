@@ -17,8 +17,8 @@
 	
 typedef struct MeshMod_Registry* MeshMod_RegistryHandle;
 
-typedef void * (*MeshMod_RegistryDefaultDataFunc)();
-typedef char const* (*MeshMod_RegistryDescriptionFunc)();
+typedef void const *(*MeshMod_RegistryDefaultDataFunc)();
+typedef char const *(*MeshMod_RegistryDescriptionFunc)();
 typedef bool (*MeshMod_RegistryEqualFunc)(void const* a, void const* b, float const epsilon);
 typedef void * (*MeshMod_RegistryDestroyFunc)(void* element);
 
@@ -49,26 +49,13 @@ AL2O3_EXTERN_C MeshMod_RegistryHandle MeshMod_RegistryCreate();
 AL2O3_EXTERN_C MeshMod_RegistryHandle MeshMod_RegistryCreateWithDefaults();
 
 AL2O3_EXTERN_C void MeshMod_RegistryDestroy(MeshMod_RegistryHandle handle);
-AL2O3_EXTERN_C void MeshMod_RegistryAddVertexType(
-	MeshMod_RegistryHandle handle,
-	MeshMod_Tag tag,
-	size_t elementSize,
-	MeshMod_RegistryCommonFunctionTable* commonFunctionTable,
-	MeshMod_RegistryVertexFunctionTable* vertexFunctionTable);
 
-AL2O3_EXTERN_C void MeshMod_RegistryAddEdgeType(
+AL2O3_EXTERN_C void MeshMod_RegistryAddType(
 	MeshMod_RegistryHandle handle,
 	MeshMod_Tag tag,
 	size_t elementSize,
 	MeshMod_RegistryCommonFunctionTable* commonFunctionTable,
-	MeshMod_RegistryEdgeFunctionTable* edgeFunctionTable);
-
-AL2O3_EXTERN_C void MeshMod_RegistryAddPolygonType(
-	MeshMod_RegistryHandle handle,
-	MeshMod_Tag tag,
-	size_t elementSize,
-	MeshMod_RegistryCommonFunctionTable* commonFunctionTable,
-	MeshMod_RegistryPolygonFunctionTable* polygonFunctionTable);
+	void* functionTable);
 
 
 AL2O3_EXTERN_C bool MeshMod_RegistryExists(MeshMod_RegistryHandle handle, MeshMod_Tag tag);
@@ -76,5 +63,8 @@ AL2O3_EXTERN_C size_t MeshMod_RegistryElementSize(MeshMod_RegistryHandle handle,
 AL2O3_EXTERN_C MeshMod_Type MeshMod_RegistryType(MeshMod_RegistryHandle handle, MeshMod_Tag tag);
 AL2O3_EXTERN_C char const* MeshMod_RegistryDescription(MeshMod_RegistryHandle handle, MeshMod_Tag tag);
 AL2O3_EXTERN_C void const* MeshMod_RegistryDefaultData(MeshMod_RegistryHandle handle, MeshMod_Tag tag);
+AL2O3_EXTERN_C MeshMod_RegistryCommonFunctionTable* MeshMod_RegistryGetCommonFunctionTable(MeshMod_RegistryHandle handle, MeshMod_Tag tag);
+
+AL2O3_EXTERN_C void* MeshMod_RegistryFunctionTable(MeshMod_RegistryHandle handle, MeshMod_Tag tag, MeshMod_Type type);
 
 #endif

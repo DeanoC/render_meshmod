@@ -34,5 +34,9 @@ AL2O3_EXTERN_C void MeshMod_DataContainerCompact(MeshMod_DataContainerHandle han
 // remap is only if the remap table is sorted as its inline use Scatter for general any index use
 AL2O3_EXTERN_C size_t MeshMod_DataContainerRemap(MeshMod_DataContainerHandle handle, CADT_VectorHandle remapper);
 
+// only for vertex containers
+AL2O3_EXTERN_C MeshMod_VertexIndex MeshMod_DataContainerVertexInterpolate1D(MeshMod_DataContainerHandle handle, MeshMod_VertexIndex i0, MeshMod_VertexIndex i1, float t);
+AL2O3_EXTERN_C MeshMod_VertexIndex MeshMod_DataContainerVertexInterpolate2D(MeshMod_DataContainerHandle handle, MeshMod_VertexIndex i0, MeshMod_VertexIndex i1, MeshMod_VertexIndex i2, float u, float v);
+
 
 #endif // GFX_MESHMOD_DATACONTAINER_H

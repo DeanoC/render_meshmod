@@ -32,7 +32,7 @@ AL2O3_EXTERN_C void MeshMod_EdgeHalfEdgeAddToRegistry(MeshMod_RegistryHandle han
 		0
 	};
 
-	MeshMod_RegistryAddEdgeType(handle,
+	MeshMod_RegistryAddType(handle,
 		MeshMod_EdgeHalfEdgeTag,
 		sizeof(MeshMod_EdgeHalfEdge),
 		&CommonFunctionTable,

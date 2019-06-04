@@ -9,7 +9,7 @@ static uint8_t const MeshMod_ContainerType_Edge = 1;
 static uint8_t const MeshMod_ContainerType_Polygon = 2;
 
 typedef struct MeshMod_DataContainer {
-	uint8_t containerType;
+	MeshMod_Type containerType;
 	CADT_BagOfVectorsHandle bag;
 	CADT_VectorHandle validVector; // TODO repalce with packed bit vector
 	size_t elementCount;
@@ -36,6 +36,7 @@ AL2O3_EXTERN_C MeshMod_DataContainerHandle MeshMod_DataContainerCreate(struct Me
 		MEMORY_FREE(dc);
 		return NULL;
 	}
+	return dc;
 }
 
 AL2O3_EXTERN_C void MeshMod_DataContainerDestroy(MeshMod_DataContainerHandle handle) {
@@ -200,4 +201,47 @@ AL2O3_EXTERN_C size_t MeshMod_DataContainerRemap(MeshMod_DataContainerHandle han
 		}
 	}
 	return newCount;
+}
+
+// only for vertex containers
+AL2O3_EXTERN_C MeshMod_VertexIndex MeshMod_DataContainerVertexInterpolate1D(MeshMod_DataContainerHandle handle, MeshMod_VertexIndex i0, MeshMod_VertexIndex i1, float t) {
+	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
+	MeshMod_RegistryHandle registry = MeshMod_MeshGetRegistry(dc->owner);
+	ASSERT(dc->containerType == MeshMod_TypeVertex);
+
+	MeshMod_DataContainerResize(dc, dc->elementCount + 1);
+
+	for (size_t i = 0; i < CADT_BagOfVectorsSize(dc->bag); ++i) {
+		CADT_VectorHandle vh = CADT_BagOfVectorsAt(dc->bag, i);
+		MeshMod_Tag tag = CADT_BagOfVectorsGetKey(dc->bag, i);
+
+		MeshMod_RegistryVertexFunctionTable* vtable = MeshMod_RegistryFunctionTable(registry, tag, MeshMod_TypeVertex);
+		void* src0 = CADT_VectorAt(vh, i0);
+		void* src1 = CADT_VectorAt(vh, i1);
+		void* dst = CADT_VectorAt(vh, dc->elementCount - 1);
+		vtable->interpolate1DFunc(src0, src1, dst, t);
+	}
+	return dc->elementCount - 1;
+}
+
+AL2O3_EXTERN_C MeshMod_VertexIndex MeshMod_DataContainerVertexInterpolate2D(MeshMod_DataContainerHandle handle, MeshMod_VertexIndex i0, MeshMod_VertexIndex i1, MeshMod_VertexIndex i2, float u, float v) {
+	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
+	MeshMod_RegistryHandle registry = MeshMod_MeshGetRegistry(dc->owner);
+	ASSERT(dc->containerType == MeshMod_TypeVertex);
+
+	MeshMod_DataContainerResize(dc, dc->elementCount + 1);
+
+	for (size_t i = 0; i < CADT_BagOfVectorsSize(dc->bag); ++i) {
+		CADT_VectorHandle vh = CADT_BagOfVectorsAt(dc->bag, i);
+		MeshMod_Tag tag = CADT_BagOfVectorsGetKey(dc->bag, i);
+
+		MeshMod_RegistryVertexFunctionTable* vtable = MeshMod_RegistryFunctionTable(registry, tag, MeshMod_TypeVertex);
+		void* src0 = CADT_VectorAt(vh, i0);
+		void* src1 = CADT_VectorAt(vh, i1);
+		void* src2 = CADT_VectorAt(vh, i2);
+		void* dst = CADT_VectorAt(vh, dc->elementCount - 1);
+		vtable->interpolate2DFunc(src0, src1, src2, dst, u, v);
+	}
+	return dc->elementCount - 1;
+
 }

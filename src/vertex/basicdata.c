@@ -1,0 +1,113 @@
+#include "al2o3_platform/platform.h"
+#include "gfx_meshmod/vertex/basicdata.h"
+#include "gfx_meshmod/registry.h"
+
+#define VT_REAL(postfix, type) \
+static char const* Vertex##postfix##Description() { \
+	return "Vertex"#postfix; \
+}; \
+void const* MeshMod_Vertex##postfix##DefaultData() { \
+	static type const nan = NAN; \
+	return &nan; \
+}; \
+AL2O3_EXTERN_C bool MeshMod_Vertex##postfix##Equal(void const* va, void const* vb, float const epsilon) { \
+	MeshMod_Vertex##postfix const* a = (MeshMod_Vertex##postfix const*)va; \
+	MeshMod_Vertex##postfix const* b = (MeshMod_Vertex##postfix const*)vb; \
+	return Math_ApproxEqual##postfix(*a, *b, epsilon); \
+}; \
+AL2O3_EXTERN_C void MeshMod_Vertex##postfix##Interpolate1D(void const* va,	void const* vb,	void* vr,	float const t) { \
+	MeshMod_Vertex##postfix const* a = (MeshMod_Vertex##postfix const*)va; \
+	MeshMod_Vertex##postfix const* b = (MeshMod_Vertex##postfix const*)vb; \
+	MeshMod_Vertex##postfix* r = (MeshMod_Vertex##postfix*)vr; \
+	*r = Math_Lerp##postfix(*a, *b, t); \
+}; \
+AL2O3_EXTERN_C void MeshMod_Vertex##postfix##Interpolate2D(void const* va, void const* vb, void const* vc, void* vr, float const u, float const v) { \
+	float const w = ((type)1) - v - u; \
+	MeshMod_Vertex##postfix const* a = (MeshMod_Vertex##postfix const*)va; \
+	MeshMod_Vertex##postfix const* b = (MeshMod_Vertex##postfix const*)vb; \
+	MeshMod_Vertex##postfix const* c = (MeshMod_Vertex##postfix const*)vc; \
+	MeshMod_Vertex##postfix* r = (MeshMod_Vertex##postfix*)vr; \
+	*r = (*a * w) + (*b * u) + (*c * v); \
+}; \
+AL2O3_EXTERN_C void MeshMod_Vertex##postfix##AddToRegistry(MeshMod_RegistryHandle handle) { \
+	static MeshMod_RegistryCommonFunctionTable CommonFunctionTable = { \
+		&MeshMod_Vertex##postfix##DefaultData, \
+		&MeshMod_Vertex##postfix##Equal, \
+		NULL,	\
+		&Vertex##postfix##Description \
+	}; \
+	static MeshMod_RegistryVertexFunctionTable VertexFunctionTable = { \
+		&MeshMod_Vertex##postfix##Interpolate1D, \
+		&MeshMod_Vertex##postfix##Interpolate2D \
+	}; \
+	MeshMod_RegistryAddType(handle, \
+		MeshMod_Vertex##postfix##Tag, \
+		sizeof(MeshMod_Vertex##postfix), \
+		&CommonFunctionTable, \
+		&VertexFunctionTable); \
+}
+
+static void const* VertexVec4FDefaultData() {
+	static Math_Vec4F_t nan = { NAN, NAN, NAN, NAN };
+	return &nan;
+}
+static void const* VertexVec4DDefaultData() {
+	static Math_Vec4D_t nan = { NAN, NAN, NAN, NAN };
+	return &nan;
+}
+static void const* VertexVec2FDefaultData() {	return VertexVec4FDefaultData(); }
+static void const* VertexVec3FDefaultData() { return VertexVec4FDefaultData(); }
+static void const* VertexVec2DDefaultData() { return VertexVec4DDefaultData(); }
+static void const* VertexVec3DDefaultData() { return VertexVec4DDefaultData(); }
+
+#define VT_VECTOR_REAL(postfix, count) \
+AL2O3_EXTERN_C bool MeshMod_Vertex##postfix##Equal(void const* va, void const* vb, float const epsilon) { \
+	MeshMod_Vertex##postfix const* a = (MeshMod_Vertex##postfix const*)va; \
+	MeshMod_Vertex##postfix const* b = (MeshMod_Vertex##postfix const*)vb; \
+	return Math_ApproxEqual##postfix(*a, *b, epsilon); \
+} \
+AL2O3_EXTERN_C void MeshMod_Vertex##postfix##Interpolate1D(void const* va, void const* vb, void* vr, float const t) { \
+	MeshMod_Vertex##postfix const* a = (MeshMod_Vertex##postfix const*)va; \
+	MeshMod_Vertex##postfix const* b = (MeshMod_Vertex##postfix const*)vb; \
+	MeshMod_Vertex##postfix* r = (MeshMod_Vertex##postfix##*)vr; \
+	*r = Math_Lerp##postfix(*a, *b, t); \
+} \
+AL2O3_EXTERN_C void MeshMod_Vertex##postfix##Interpolate2D(void const* va, void const* vb, void const* vc, void* vr, float const u, float const v) { \
+	float const w = 1.0f - v - u; \
+	MeshMod_Vertex##postfix const* a = (MeshMod_Vertex##postfix const*)va; \
+	MeshMod_Vertex##postfix const* b = (MeshMod_Vertex##postfix const*)vb; \
+	MeshMod_Vertex##postfix const* c = (MeshMod_Vertex##postfix const*)vc; \
+	MeshMod_Vertex##postfix* r = (MeshMod_Vertex##postfix*)vr; \
+	for(int i = 0;i < count; ++i) { \
+		r->v[i] = ((float)a->v[i] * w) + ((float)b->v[i] * u) + ((float)c->v[i] * v); \
+	} \
+} \
+static char const* Vertex##postfix##Description() { \
+	return "Vertex"#postfix; \
+} \
+AL2O3_EXTERN_C void MeshMod_Vertex##postfix##AddToRegistry(MeshMod_RegistryHandle handle) { \
+	static MeshMod_RegistryCommonFunctionTable CommonFunctionTable = { \
+		&Vertex##postfix##DefaultData, \
+		&MeshMod_Vertex##postfix##Equal, \
+		NULL, \
+		&Vertex##postfix##Description \
+	}; \
+	static MeshMod_RegistryVertexFunctionTable VertexFunctionTable = { \
+		&MeshMod_Vertex##postfix##Interpolate1D, \
+		&MeshMod_Vertex##postfix##Interpolate2D \
+	}; \
+	MeshMod_RegistryAddType(handle, \
+		MeshMod_Vertex##postfix##Tag, \
+		sizeof(MeshMod_Vertex##postfix), \
+		&CommonFunctionTable, \
+		&VertexFunctionTable); \
+}
+
+VT_REAL(F, float);
+VT_REAL(D, double);
+VT_VECTOR_REAL(Vec2F, 2);
+VT_VECTOR_REAL(Vec3F, 3);
+VT_VECTOR_REAL(Vec4F, 4);
+VT_VECTOR_REAL(Vec2D, 2);
+VT_VECTOR_REAL(Vec3D, 3);
+VT_VECTOR_REAL(Vec4D, 4);
