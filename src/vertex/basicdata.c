@@ -22,12 +22,12 @@ AL2O3_EXTERN_C void MeshMod_Vertex##postfix##Interpolate1D(void const* va,	void 
 	*r = Math_Lerp##postfix(*a, *b, t); \
 }; \
 AL2O3_EXTERN_C void MeshMod_Vertex##postfix##Interpolate2D(void const* va, void const* vb, void const* vc, void* vr, float const u, float const v) { \
-	float const w = ((type)1) - v - u; \
 	MeshMod_Vertex##postfix const* a = (MeshMod_Vertex##postfix const*)va; \
 	MeshMod_Vertex##postfix const* b = (MeshMod_Vertex##postfix const*)vb; \
 	MeshMod_Vertex##postfix const* c = (MeshMod_Vertex##postfix const*)vc; \
 	MeshMod_Vertex##postfix* r = (MeshMod_Vertex##postfix*)vr; \
-	*r = (*a * w) + (*b * u) + (*c * v); \
+	float const w = 1.0f - v - u; \
+	*r = (((float)*a) * w) + (((float)*b) * u) + (((float)*c) * v); \
 }; \
 AL2O3_EXTERN_C void MeshMod_Vertex##postfix##AddToRegistry(MeshMod_RegistryHandle handle) { \
 	static MeshMod_RegistryCommonFunctionTable CommonFunctionTable = { \
@@ -73,11 +73,11 @@ AL2O3_EXTERN_C void MeshMod_Vertex##postfix##Interpolate1D(void const* va, void 
 	*r = Math_Lerp##postfix(*a, *b, t); \
 } \
 AL2O3_EXTERN_C void MeshMod_Vertex##postfix##Interpolate2D(void const* va, void const* vb, void const* vc, void* vr, float const u, float const v) { \
-	float const w = 1.0f - v - u; \
 	MeshMod_Vertex##postfix const* a = (MeshMod_Vertex##postfix const*)va; \
 	MeshMod_Vertex##postfix const* b = (MeshMod_Vertex##postfix const*)vb; \
 	MeshMod_Vertex##postfix const* c = (MeshMod_Vertex##postfix const*)vc; \
 	MeshMod_Vertex##postfix* r = (MeshMod_Vertex##postfix*)vr; \
+	float const w = 1.0f - v - u; \
 	for(int i = 0;i < count; ++i) { \
 		r->v[i] = ((float)a->v[i] * w) + ((float)b->v[i] * u) + ((float)c->v[i] * v); \
 	} \

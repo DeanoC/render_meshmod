@@ -19,7 +19,7 @@ AL2O3_EXTERN_C size_t MeshMod_DataContainerSize(MeshMod_DataContainerHandle hand
 AL2O3_EXTERN_C void MeshMod_DataContainerResize(MeshMod_DataContainerHandle handle, size_t size);
 
 // keys should be MeshMod_Tag with 16 bits of user data or'ed in (lowest bits)
-AL2O3_EXTERN_C bool MeshMod_DataContainerAdd(MeshMod_DataContainerHandle handle, uint64_t key);
+AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerAdd(MeshMod_DataContainerHandle handle, uint64_t key);
 AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerVectorLookup(MeshMod_DataContainerHandle handle, uint64_t key);
 AL2O3_EXTERN_C bool MeshMod_DataContainerIsValid(MeshMod_DataContainerHandle handle, size_t index);
 AL2O3_EXTERN_C void MeshMod_DataContainerMarkInvalid(MeshMod_DataContainerHandle handle, size_t index);

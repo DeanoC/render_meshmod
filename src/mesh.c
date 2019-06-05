@@ -100,11 +100,3 @@ AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshClone(MeshMod_MeshHandle handle) {
 	nmesh->polygons = MeshMod_DataContainerClone(omesh->polygons, nmesh);
 	return nmesh;
 }
-
-AL2O3_EXTERN_C MeshMod_VertexIndex MeshMod_MeshVertexInterpolate1D(MeshMod_MeshHandle handle, MeshMod_VertexIndex i0, MeshMod_VertexIndex i1, double t) {
-
-}
-
-AL2O3_EXTERN_C MeshMod_VertexIndex MeshMod_MeshVertexInterpolate2D(MeshMod_MeshHandle handle, MeshMod_VertexIndex i0, MeshMod_VertexIndex i1, MeshMod_VertexIndex i2, double u, double v) {
-
-}

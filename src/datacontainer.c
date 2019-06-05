@@ -63,17 +63,17 @@ AL2O3_EXTERN_C MeshMod_DataContainerHandle MeshMod_DataContainerClone(MeshMod_Da
 
 }
 
-AL2O3_EXTERN_C bool MeshMod_DataContainerAdd(MeshMod_DataContainerHandle handle, MeshMod_Tag tag) {
+AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerAdd(MeshMod_DataContainerHandle handle, MeshMod_Tag tag) {
 	ASSERT(handle);
 	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
 	if ((uint8_t)(tag >> 56) != dc->containerType) {
-		return false;
+		return NULL;
 	}
 
 	MeshMod_RegistryHandle registry = MeshMod_MeshGetRegistry(dc->owner);
 	ASSERT(MeshMod_RegistryExists(registry, tag));
 	size_t const elementSize = MeshMod_RegistryElementSize(registry, tag);
-	return CADT_BagOfVectorsAdd(dc->bag, tag, elementSize) != NULL;
+	return CADT_BagOfVectorsAdd(dc->bag, tag, elementSize);
 }
 
 AL2O3_EXTERN_C size_t MeshMod_DataContainerSize(MeshMod_DataContainerHandle handle) {

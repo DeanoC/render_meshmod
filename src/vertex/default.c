@@ -15,4 +15,6 @@ void MeshMod_AddVertexDefaultsToTagRegistry(MeshMod_RegistryHandle handle) {
 	REGISTER_TYPE(Vec3D);
 	REGISTER_TYPE(Vec4D);
 	REGISTER_TYPE(Position);
+	REGISTER_TYPE(Normal);
+	REGISTER_TYPE(Uv);
 }
