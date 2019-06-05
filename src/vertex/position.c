@@ -17,7 +17,10 @@ AL2O3_EXTERN_C void MeshMod_VertexPositionAddToRegistry(MeshMod_RegistryHandle h
 		&VertexPositionDefaultData,
 		&MeshMod_VertexVec3FEqual,
 		NULL,
-		&VertexPositionDescription
+		&VertexPositionDescription,
+		NULL,
+		&MeshMod_VertexVec3FDistance,
+
 	};
 
 	static MeshMod_RegistryVertexFunctionTable VertexFunctionTable = {

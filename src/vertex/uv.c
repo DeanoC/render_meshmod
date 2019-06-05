@@ -18,7 +18,10 @@ AL2O3_EXTERN_C void MeshMod_VertexUvAddToRegistry(MeshMod_RegistryHandle handle)
 		&VertexUvDefaultData,
 		&MeshMod_VertexVec2FEqual,
 		NULL,
-		&VertexUvDescription
+		&VertexUvDescription,
+		NULL,
+		& MeshMod_VertexVec2FDistance,
+
 	};
 
 	static MeshMod_RegistryVertexFunctionTable VertexFunctionTable = {

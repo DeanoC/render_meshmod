@@ -21,6 +21,7 @@ set(Interface
 		vertex/position.h
 		vertex/normal.h
 		vertex/uv.h
+		vertex/similar.h
 		edge/halfedge.h
 		polygon/tribrep.h
 #		halfedgedata/halfedgecontainers.h
@@ -62,6 +63,7 @@ set(Src
 		vertex/position.c
 		vertex/normal.c
 		vertex/uv.c
+		vertex/similar.c
 		edge/default.c
 		edge/halfedge.c
 		polygon/default.c

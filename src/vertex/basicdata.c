@@ -15,6 +15,11 @@ AL2O3_EXTERN_C bool MeshMod_Vertex##postfix##Equal(void const* va, void const* v
 	MeshMod_Vertex##postfix const* b = (MeshMod_Vertex##postfix const*)vb; \
 	return Math_ApproxEqual##postfix(*a, *b, epsilon); \
 }; \
+AL2O3_EXTERN_C double MeshMod_Vertex##postfix##Distance(void const* va, void const* vb) { \
+	MeshMod_Vertex##postfix const* a = (MeshMod_Vertex##postfix const*)va; \
+	MeshMod_Vertex##postfix const* b = (MeshMod_Vertex##postfix const*)vb; \
+	return (double)*a - (double)*b; \
+}; \
 AL2O3_EXTERN_C void MeshMod_Vertex##postfix##Interpolate1D(void const* va,	void const* vb,	void* vr,	float const t) { \
 	MeshMod_Vertex##postfix const* a = (MeshMod_Vertex##postfix const*)va; \
 	MeshMod_Vertex##postfix const* b = (MeshMod_Vertex##postfix const*)vb; \
@@ -34,7 +39,9 @@ AL2O3_EXTERN_C void MeshMod_Vertex##postfix##AddToRegistry(MeshMod_RegistryHandl
 		&MeshMod_Vertex##postfix##DefaultData, \
 		&MeshMod_Vertex##postfix##Equal, \
 		NULL,	\
-		&Vertex##postfix##Description \
+		&Vertex##postfix##Description, \
+		NULL, \
+		&MeshMod_Vertex##postfix##Distance, \
 	}; \
 	static MeshMod_RegistryVertexFunctionTable VertexFunctionTable = { \
 		&MeshMod_Vertex##postfix##Interpolate1D, \
@@ -66,6 +73,11 @@ AL2O3_EXTERN_C bool MeshMod_Vertex##postfix##Equal(void const* va, void const* v
 	MeshMod_Vertex##postfix const* b = (MeshMod_Vertex##postfix const*)vb; \
 	return Math_ApproxEqual##postfix(*a, *b, epsilon); \
 } \
+AL2O3_EXTERN_C double MeshMod_Vertex##postfix##Distance(void const* va, void const* vb) { \
+	MeshMod_Vertex##postfix const* a = (MeshMod_Vertex##postfix const*)va; \
+	MeshMod_Vertex##postfix const* b = (MeshMod_Vertex##postfix const*)vb; \
+	return (double)Math_Dot##postfix(*a, *b); \
+} \
 AL2O3_EXTERN_C void MeshMod_Vertex##postfix##Interpolate1D(void const* va, void const* vb, void* vr, float const t) { \
 	MeshMod_Vertex##postfix const* a = (MeshMod_Vertex##postfix const*)va; \
 	MeshMod_Vertex##postfix const* b = (MeshMod_Vertex##postfix const*)vb; \
@@ -90,7 +102,9 @@ AL2O3_EXTERN_C void MeshMod_Vertex##postfix##AddToRegistry(MeshMod_RegistryHandl
 		&Vertex##postfix##DefaultData, \
 		&MeshMod_Vertex##postfix##Equal, \
 		NULL, \
-		&Vertex##postfix##Description \
+		&Vertex##postfix##Description, \
+		NULL, \
+		&MeshMod_Vertex##postfix##Distance, \
 	}; \
 	static MeshMod_RegistryVertexFunctionTable VertexFunctionTable = { \
 		&MeshMod_Vertex##postfix##Interpolate1D, \

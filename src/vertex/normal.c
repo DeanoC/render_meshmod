@@ -17,7 +17,9 @@ AL2O3_EXTERN_C void MeshMod_VertexNormalAddToRegistry(MeshMod_RegistryHandle han
 		&VertexNormalDefaultData,
 		&MeshMod_VertexVec3FEqual,
 		NULL,
-		&VertexNormalDescription
+		&VertexNormalDescription,
+		NULL,
+		&MeshMod_VertexVec3FDistance,
 	};
 
 	static MeshMod_RegistryVertexFunctionTable VertexFunctionTable = {

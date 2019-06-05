@@ -19,14 +19,20 @@ AL2O3_EXTERN_C size_t MeshMod_DataContainerSize(MeshMod_DataContainerHandle hand
 AL2O3_EXTERN_C void MeshMod_DataContainerResize(MeshMod_DataContainerHandle handle, size_t size);
 
 // keys should be MeshMod_Tag with 16 bits of user data or'ed in (lowest bits)
-AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerAdd(MeshMod_DataContainerHandle handle, uint64_t key);
-AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerVectorLookup(MeshMod_DataContainerHandle handle, uint64_t key);
+AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerAdd(MeshMod_DataContainerHandle handle, MeshMod_Tag tag);
+AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerVectorLookup(MeshMod_DataContainerHandle handle, MeshMod_Tag tag);
+AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerVectorLookupOrAdd(MeshMod_DataContainerHandle handle, MeshMod_Tag tag);
+AL2O3_EXTERN_C bool MeshMod_DataContainerExists(MeshMod_DataContainerHandle handle, MeshMod_Tag tag);
+
 AL2O3_EXTERN_C bool MeshMod_DataContainerIsValid(MeshMod_DataContainerHandle handle, size_t index);
 AL2O3_EXTERN_C void MeshMod_DataContainerMarkInvalid(MeshMod_DataContainerHandle handle, size_t index);
 AL2O3_EXTERN_C void MeshMod_DataContainerReplace(MeshMod_DataContainerHandle handle, size_t srcIndex, size_t dstIndex);
 AL2O3_EXTERN_C void MeshMod_DataContainerSwap(MeshMod_DataContainerHandle handle, size_t index0, size_t index1);
 AL2O3_EXTERN_C void MeshMod_DataContainerRemove(MeshMod_DataContainerHandle handle, size_t index);
 AL2O3_EXTERN_C void MeshMod_DataContainerSwapRemove(MeshMod_DataContainerHandle handle, size_t index);
+
+// changed will remove any transitory data, as it can be rebuilt with the new data
+AL2O3_EXTERN_C void MeshMod_DataContainerChanged(MeshMod_DataContainerHandle handle);
 
 // caller owns returns Vector and must destroy when done
 AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerGetValidRemappingTable(MeshMod_DataContainerHandle handlex);

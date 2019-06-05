@@ -21,6 +21,8 @@ typedef void const *(*MeshMod_RegistryDefaultDataFunc)();
 typedef char const *(*MeshMod_RegistryDescriptionFunc)();
 typedef bool (*MeshMod_RegistryEqualFunc)(void const* a, void const* b, float const epsilon);
 typedef void * (*MeshMod_RegistryDestroyFunc)(void* element);
+typedef bool (*MeshMod_RegistryIsTransitoryFunc)();
+typedef double (*MeshMod_RegistryDistanceFunc)();
 
 typedef void (*MeshMod_RegistryVertexInterpolate1DFunc)(void const* a, void const* b, void* r, float const t);
 typedef void (*MeshMod_RegistryVertexInterpolate2DFunc)(void const* a, void const* b, void const* c, void* r, float const u, float const v);
@@ -28,13 +30,15 @@ typedef void (*MeshMod_RegistryVertexInterpolate2DFunc)(void const* a, void cons
 typedef struct MeshMod_RegistryCommonFunctionTable {
 	MeshMod_RegistryDefaultDataFunc defaultDataFunc;
 	MeshMod_RegistryEqualFunc equalFunc;
-	MeshMod_RegistryDestroyFunc destroyFunc; // can be null
+	MeshMod_RegistryDestroyFunc destroyFunc; // can be null only set if really needs a destructor
 	MeshMod_RegistryDescriptionFunc descriptionFunc; // can be null
+	MeshMod_RegistryIsTransitoryFunc isTransitoryFunc; // can be null default to falses
+	MeshMod_RegistryDistanceFunc distanceFunc;
 } MeshMod_RegistryCommonFunctionTable;
 
 typedef struct MeshMod_RegistryVertexFunctionTable {
-	MeshMod_RegistryVertexInterpolate1DFunc interpolate1DFunc;
-	MeshMod_RegistryVertexInterpolate2DFunc interpolate2DFunc;
+	MeshMod_RegistryVertexInterpolate1DFunc interpolate1DFunc; // can be null meaning not interpolatable
+	MeshMod_RegistryVertexInterpolate2DFunc interpolate2DFunc; // can be null meaning not interpolatable
 } MeshMod_RegistryVertexFunctionTable;
 
 typedef struct MeshMod_RegistryEdgeFunctionTable {

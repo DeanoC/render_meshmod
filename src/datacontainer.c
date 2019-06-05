@@ -75,6 +75,24 @@ AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerAdd(MeshMod_DataContainerH
 	size_t const elementSize = MeshMod_RegistryElementSize(registry, tag);
 	return CADT_BagOfVectorsAdd(dc->bag, tag, elementSize);
 }
+AL2O3_EXTERN_C bool MeshMod_DataContainerExists(MeshMod_DataContainerHandle handle, MeshMod_Tag tag) {
+	ASSERT(handle);
+	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
+	if ((uint8_t)(tag >> 56) != dc->containerType) {
+		return false;
+	}
+
+	return CADT_BagOfVectorsKeyExists(dc->bag, tag);
+}
+
+AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerVectorLookupOrAdd(MeshMod_DataContainerHandle handle, MeshMod_Tag tag) {
+	if (MeshMod_DataContainerExists(handle, tag)) {
+		return MeshMod_DataContainerVectorLookup(handle, tag);
+	}
+	else {
+		return MeshMod_DataContainerAdd(handle, tag);
+	}
+}
 
 AL2O3_EXTERN_C size_t MeshMod_DataContainerSize(MeshMod_DataContainerHandle handle) {
 	ASSERT(handle);
@@ -216,10 +234,12 @@ AL2O3_EXTERN_C MeshMod_VertexIndex MeshMod_DataContainerVertexInterpolate1D(Mesh
 		MeshMod_Tag tag = CADT_BagOfVectorsGetKey(dc->bag, i);
 
 		MeshMod_RegistryVertexFunctionTable* vtable = MeshMod_RegistryFunctionTable(registry, tag, MeshMod_TypeVertex);
-		void* src0 = CADT_VectorAt(vh, i0);
-		void* src1 = CADT_VectorAt(vh, i1);
-		void* dst = CADT_VectorAt(vh, dc->elementCount - 1);
-		vtable->interpolate1DFunc(src0, src1, dst, t);
+		if (vtable->interpolate2DFunc) {
+			void* src0 = CADT_VectorAt(vh, i0);
+			void* src1 = CADT_VectorAt(vh, i1);
+			void* dst = CADT_VectorAt(vh, dc->elementCount - 1);
+			vtable->interpolate1DFunc(src0, src1, dst, t);
+		}
 	}
 	return dc->elementCount - 1;
 }
@@ -236,12 +256,40 @@ AL2O3_EXTERN_C MeshMod_VertexIndex MeshMod_DataContainerVertexInterpolate2D(Mesh
 		MeshMod_Tag tag = CADT_BagOfVectorsGetKey(dc->bag, i);
 
 		MeshMod_RegistryVertexFunctionTable* vtable = MeshMod_RegistryFunctionTable(registry, tag, MeshMod_TypeVertex);
-		void* src0 = CADT_VectorAt(vh, i0);
-		void* src1 = CADT_VectorAt(vh, i1);
-		void* src2 = CADT_VectorAt(vh, i2);
-		void* dst = CADT_VectorAt(vh, dc->elementCount - 1);
-		vtable->interpolate2DFunc(src0, src1, src2, dst, u, v);
+		if (vtable->interpolate2DFunc) {
+			void* src0 = CADT_VectorAt(vh, i0);
+			void* src1 = CADT_VectorAt(vh, i1);
+			void* src2 = CADT_VectorAt(vh, i2);
+			void* dst = CADT_VectorAt(vh, dc->elementCount - 1);
+			vtable->interpolate2DFunc(src0, src1, src2, dst, u, v);
+		}
 	}
 	return dc->elementCount - 1;
 
+}
+
+AL2O3_EXTERN_C void MeshMod_DataContainerChanged(MeshMod_DataContainerHandle handle) {
+	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
+	MeshMod_RegistryHandle registry = MeshMod_MeshGetRegistry(dc->owner);
+
+#define TAG_REMOVE_SIZE 128
+	MeshMod_Tag toDelete[TAG_REMOVE_SIZE];
+	size_t toDeleteHead = 0;
+
+	for (size_t i = 0; i < CADT_BagOfVectorsSize(dc->bag); ++i) {
+		MeshMod_Tag tag = CADT_BagOfVectorsGetKey(dc->bag, i);
+		MeshMod_RegistryCommonFunctionTable* vtable = MeshMod_RegistryGetCommonFunctionTable(registry, tag);
+		if (vtable->isTransitoryFunc && vtable->isTransitoryFunc()) {
+			toDelete[toDeleteHead++] = tag;
+			ASSERT(toDeleteHead != TAG_REMOVE_SIZE)
+			if (toDeleteHead == TAG_REMOVE_SIZE) {
+				toDeleteHead = TAG_REMOVE_SIZE - 1;
+			}
+		}
+	}
+#undef TAG_REMOVE_SIZE
+
+	for (size_t i = 0; i < toDeleteHead; ++i) {
+		CADT_BagOfVectorsRemove(dc->bag, toDelete[i]);
+	}
 }
