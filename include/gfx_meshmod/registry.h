@@ -13,7 +13,6 @@
 		(uint64_t)('E') << 56 | (uint64_t)(b) << 48 | (uint64_t)(c) << 40 | (uint64_t)(d) << 32 | (uint64_t)(e) << 24 | (uint64_t)(f) << 16)
 #define MESHMOD_POLYGONTAG(b, c, d, e, f) (MeshMod_Tag)( \
 		(uint64_t)('P') << 56 | (uint64_t)(b) << 48 | (uint64_t)(c) << 40 | (uint64_t)(d) << 32 | (uint64_t)(e) << 24 | (uint64_t)(f) << 16)
-#undef MESHMOD_TAG
 	
 typedef struct MeshMod_Registry* MeshMod_RegistryHandle;
 
