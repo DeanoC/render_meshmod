@@ -5,10 +5,16 @@
 #include "al2o3_platform/platform.h"
 #include "al2o3_cmath/aabb.h"
 
-#define MeshMod_DataAabb2FTag MESHMOD_TAG('A', 'A', 'B', 'B', '2', 'F')
-typedef Math_Aaab2F MeshMod_DataAabb2F;
+typedef struct MathMod_DataAabb2F {
+	uint64_t hash;
+	MeshMod_Tag dataTag;
+	Math_Aabb2F aabb;
+} MeshMod_DataAabb2F;
 
-#define MeshMod_DataAabb3FTag MESHMOD_TAG('A', 'A', 'B', 'B', '3', 'F')
-typedef Math_Aaab3F MeshMod_DataAabb3F;
+typedef struct MathMod_DataAabb3F {
+	uint64_t hash;
+	MeshMod_Tag dataTag;
+	Math_Aabb3F aabb;
+} MeshMod_DataAabb3F;
 
 #endif

@@ -5,15 +5,7 @@
 #include "al2o3_platform/platform.h"
 #include "gfx_meshmod/meshmod.h"
 
-#define MESHMOD_TAG(a, b, c, d, e, f) (MeshMod_Tag)( \
-		(uint64_t)(a) << 56 | (uint64_t)(b) << 48 | (uint64_t)(c) << 40 | (uint64_t)(d) << 32 | (uint64_t)(e) << 24 | (uint64_t)(f) << 16)
-#define MESHMOD_VERTEXTAG(b, c, d, e, f) (MeshMod_Tag)( \
-		(uint64_t)('V') << 56 | (uint64_t)(b) << 48 | (uint64_t)(c) << 40 | (uint64_t)(d) << 32 | (uint64_t)(e) << 24 | (uint64_t)(f) << 16)
-#define MESHMOD_EDGETAG(b, c, d, e, f) (MeshMod_Tag)( \
-		(uint64_t)('E') << 56 | (uint64_t)(b) << 48 | (uint64_t)(c) << 40 | (uint64_t)(d) << 32 | (uint64_t)(e) << 24 | (uint64_t)(f) << 16)
-#define MESHMOD_POLYGONTAG(b, c, d, e, f) (MeshMod_Tag)( \
-		(uint64_t)('P') << 56 | (uint64_t)(b) << 48 | (uint64_t)(c) << 40 | (uint64_t)(d) << 32 | (uint64_t)(e) << 24 | (uint64_t)(f) << 16)
-	
+
 typedef struct MeshMod_Registry* MeshMod_RegistryHandle;
 
 typedef void const *(*MeshMod_RegistryDefaultDataFunc)();

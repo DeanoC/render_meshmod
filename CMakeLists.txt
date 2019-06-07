@@ -17,6 +17,7 @@ set(Interface
 		meshmod.h
 		mesh.h
 		datacontainer.h
+		basicalgos.h
 		vertex/basicdata.h
 		vertex/position.h
 		vertex/normal.h
@@ -24,40 +25,13 @@ set(Interface
 		vertex/similar.h
 		edge/halfedge.h
 		polygon/tribrep.h
-#		halfedgedata/halfedgecontainers.h
-#		halfedgedata/halfedgedata.h
-#		materialparameterdata/materialparameter.h
-#		materialparameterdata/materialparameterbase.h
-#		materialparameterdata/materialvertexbindings.h
-#		materialparameterdata/rgbmaterialparameter.h
-#		materialparameterdata/scalarmaterialparameter.h
-#		materialparameterdata/texturematerialparameter.h
-#		meshdata/materialcontainers.h
-#		meshdata/materialdata.h
-#		polygonsdata/polygoncontainers.h
-#		polygonsdata/polygondata.h
-#		genericcontainters.h
-#		halfedges.h
-#		indextypes.h
-#		mesh.h
-#		meshmod.h
-#		polygons.h
-#		property.h
-#		scene.h
-#		scenenode.h
-#		sceneobject.h
-#		transform.h
-#		triangle.h
-#		types.h
-#		varicontainer.h
-#		varielements.h
-#		vertices.h
 		)
 
 set(Src
 		registry.c
 		mesh.c
 		datacontainer.c
+		basicalgos.c
 		vertex/basicdata.c
 		vertex/default.c
 		vertex/position.c
@@ -83,8 +57,10 @@ set(Deps
 		al2o3_cmath
 		al2o3_vfile
 		al2o3_stb
+		al2o3_lz4
 		utils_misccpp
 		)
+
 ADD_LIB(${LibName} "${Interface}" "${Src}" "${Deps}")
 
 set( Tests

@@ -41,7 +41,7 @@ TEST_CASE("Mesh vertex", "[MeshMod Mesh]") {
 	REQUIRE(MeshMod_DataContainerSize(vhandle) == 100);
 	MeshMod_DataContainerResize(vhandle, 1);
 	REQUIRE(MeshMod_DataContainerSize(vhandle) == 1);
-	CADT_VectorHandle posVec = MeshMod_DataContainerVectorLookup(vhandle, MeshMod_VertexPositionTag);
+	CADT_VectorHandle posVec = MeshMod_DataContainerMutableLookup(vhandle, MeshMod_VertexPositionTag);
 	REQUIRE(posVec);
 	MeshMod_VertexPosition* pos0 = (MeshMod_VertexPosition *)CADT_VectorAt(posVec, 0);
 	REQUIRE(pos0);
@@ -121,7 +121,7 @@ TEST_CASE("Mesh vertex interpolation", "[MeshMod Mesh]") {
 	REQUIRE(sizeof(Math_Vec2F_t) == sizeof(MeshMod_VertexVec2F));
 
 	MeshMod_DataContainerResize(vhandle, 3);
-	CADT_VectorHandle posVec = MeshMod_DataContainerVectorLookup(vhandle, MeshMod_VertexVec2FTag);
+	CADT_VectorHandle posVec = MeshMod_DataContainerMutableLookup(vhandle, MeshMod_VertexVec2FTag);
 	Math_Vec2F_t* poses = (Math_Vec2F_t*)CADT_VectorAt(posVec, 0);
 	REQUIRE(poses);
 	Math_Vec2F_t const a = { 0.0f, 0.0f };
