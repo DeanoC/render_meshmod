@@ -134,19 +134,23 @@ AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshClone(MeshMod_MeshHandle handle) {
 
 	return nmesh;
 }
-
-AL2O3_EXTERN_C void* MeshMod_MeshAddData(MeshMod_MeshHandle handle, MeshMod_Tag tag, void* data, size_t dataLen) {
+AL2O3_EXTERN_C void* MeshMod_MeshAddDataZeroed(MeshMod_MeshHandle handle, MeshMod_Tag tag, size_t dataLen) {
 	ASSERT(handle);
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*)handle;
 	ASSERT(MeshMod_MeshHasData(handle, tag) == false);
-	void* ourData = MEMORY_MALLOC(dataLen);
-	memcpy(ourData, data, dataLen);
-	CADT_VectorPushElement(mesh->arbitaryDataKeys, tag);
-	CADT_DictU64Add(mesh->arbitaryData, tag, (uint64_t)ourData);
+	void* outData = MEMORY_CALLOC(1, dataLen);
+	CADT_VectorPushElement(mesh->arbitaryDataKeys, &tag);
+	CADT_DictU64Add(mesh->arbitaryData, tag, (uint64_t)outData);
 	CADT_DictU64Add(mesh->arbitaryDataSizes, tag, dataLen);
 
-	return ourData;
+	return outData;
 }
+AL2O3_EXTERN_C void* MeshMod_MeshAddData(MeshMod_MeshHandle handle, MeshMod_Tag tag, void* data, size_t dataLen) {
+	void* outData = MeshMod_MeshAddDataZeroed(handle, tag, dataLen);
+	memcpy(outData, data, dataLen);
+	return outData;
+}
+
 AL2O3_EXTERN_C void* MeshMod_MeshGetData(MeshMod_MeshHandle handle, MeshMod_Tag tag) {
 	ASSERT(handle);
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*)handle;

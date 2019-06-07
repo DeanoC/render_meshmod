@@ -7,10 +7,6 @@
 #include "gfx_meshmod/mesh.h"
 
 #include "al2o3_lz4/lz4.h"
-	
-static uint8_t const MeshMod_ContainerType_Vertex = 0;
-static uint8_t const MeshMod_ContainerType_Edge = 1;
-static uint8_t const MeshMod_ContainerType_Polygon = 2;
 
 typedef struct MeshMod_DataContainer {
 	MeshMod_Type containerType;
@@ -42,7 +38,7 @@ AL2O3_EXTERN_C MeshMod_DataContainerHandle MeshMod_DataContainerCreate(struct Me
 
 failexit:
 	if (dc && dc->vectorHashs != NULL) {
-		CADT_VectorDestroy(dc->vectorHashs);
+		CADT_DictU64Destroy(dc->vectorHashs);
 	}
 	if (dc && dc->validVector != NULL) {
 		CADT_VectorDestroy(dc->validVector);
@@ -344,9 +340,13 @@ AL2O3_EXTERN_C void MeshMod_DataContainerChanged(MeshMod_DataContainerHandle han
 AL2O3_EXTERN_C uint64_t MeshMod_DataContainerHash(MeshMod_DataContainerHandle handle, MeshMod_Tag tag) {
 	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
 	CADT_VectorHandle v = MeshMod_DataContainerConstLookup(handle, tag);
-	if (v == NULL) return NULL;
+	if (v == NULL) return 0;
 	uint64_t hash = CADT_DictU64Get(dc->vectorHashs, tag);
 	if (hash == 0) {
-		hash = LZ4_XXHash();
+		hash = LZ4_XXHash(CADT_VectorData(v), CADT_VectorSize(v) * CADT_VectorElementSize(v), 0);
+		ASSERT(hash != 0);
+		CADT_DictU64Replace(dc->vectorHashs, tag, hash);
 	}
+	
+	return hash;
 }

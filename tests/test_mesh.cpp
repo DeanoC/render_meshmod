@@ -5,6 +5,8 @@
 #include "gfx_meshmod/vertex/position.h"
 #include "gfx_meshmod/edge/halfedge.h"
 #include "gfx_meshmod/polygon/tribrep.h"
+#include "gfx_meshmod/data/aabb.h"
+#include "gfx_meshmod/basicalgos.h"
 
 TEST_CASE("Mesh Create", "[MeshMod Mesh]") {
 
@@ -166,4 +168,55 @@ TEST_CASE("Mesh edge", "[MeshMod Mesh]") {
 	REQUIRE(MeshMod_DataContainerSize(ehandle) == 0);
 
 	MeshMod_MeshDestroy(handle);
+}
+
+TEST_CASE("Mesh Position Extents", "[MeshMod Mesh]") {
+	MeshMod_MeshHandle handle = MeshMod_MeshCreateWithDefaultRegistry("Test Mesh");
+	REQUIRE(handle);
+
+	MeshMod_DataContainerHandle vhandle = MeshMod_MeshGetVertices(handle);
+	REQUIRE(MeshMod_DataContainerAdd(vhandle, MeshMod_VertexPositionTag));
+	REQUIRE_FALSE(MeshMod_DataContainerAdd(vhandle, MeshMod_VertexPositionTag));
+
+	Math_Vec3F_t tri[3] = {
+		-1.0f, -2.0f, -3.0f,
+		1.0f, 2.0f, 3.0f,
+		-1.0f, 4.0f, -3.0f,
+	};
+	ASSERT(sizeof(Math_Vec3F_t) == sizeof(MeshMod_VertexPosition));
+	CADT_VectorHandle posv = MeshMod_DataContainerMutableLookup(vhandle, MeshMod_VertexPositionTag);
+	MeshMod_DataContainerResize(vhandle, 3);
+	Math_Vec3F_t* data = (MeshMod_VertexPosition*)CADT_VectorData(posv);
+	memcpy(data, tri, sizeof(Math_Vec3F_t) * 3);
+
+	MeshMod_DataAabb3F const* aabb = MeshMod_MeshComputeExtents3F(handle, MeshMod_VertexPositionTag);
+	REQUIRE(aabb->dataTag == MESHMOD_HASHTAG(MeshMod_VertexPositionTag));
+	REQUIRE(aabb->hash != 0);
+	REQUIRE(aabb->aabb.minExtent.x == Approx(-1.0f));
+	REQUIRE(aabb->aabb.minExtent.y == Approx(-2.0f));
+	REQUIRE(aabb->aabb.minExtent.z == Approx(-3.0f));
+	REQUIRE(aabb->aabb.maxExtent.x == Approx(1.0f));
+	REQUIRE(aabb->aabb.maxExtent.y == Approx(4.0f));
+	REQUIRE(aabb->aabb.maxExtent.z == Approx(3.0f));
+	uint64_t const hash = aabb->hash;
+	aabb = MeshMod_MeshComputeExtents3F(handle, MeshMod_VertexPositionTag);
+	REQUIRE(aabb->hash == hash);
+
+	Math_Vec3F_t tri2[3] = {
+	-10.0f, -2.0f, -30.0f,
+	10.0f, 2.0f, 30.0f,
+	-10.0f, 4.0f, -30.0f,
+	};
+	MeshMod_DataContainerResize(vhandle, 6);
+	data = (MeshMod_VertexPosition*)CADT_VectorData(posv);
+	memcpy(data + 3, tri2, sizeof(Math_Vec3F_t) * 3);
+	aabb = MeshMod_MeshComputeExtents3F(handle, MeshMod_VertexPositionTag);
+	REQUIRE(aabb->dataTag == MESHMOD_HASHTAG(MeshMod_VertexPositionTag));
+	REQUIRE(aabb->hash != hash);
+	REQUIRE(aabb->aabb.minExtent.x == Approx(-10.0f));
+	REQUIRE(aabb->aabb.minExtent.y == Approx(-2.0f));
+	REQUIRE(aabb->aabb.minExtent.z == Approx(-30.0f));
+	REQUIRE(aabb->aabb.maxExtent.x == Approx(10.0f));
+	REQUIRE(aabb->aabb.maxExtent.y == Approx(4.0f));
+	REQUIRE(aabb->aabb.maxExtent.z == Approx(30.0f));
 }

@@ -8,7 +8,7 @@
 extern void MeshMod_AddVertexDefaultsToTagRegistry(MeshMod_RegistryHandle handle);
 extern void MeshMod_AddEdgeDefaultsToTagRegistry(MeshMod_RegistryHandle handle);
 extern void MeshMod_AddPolygonDefaultsToTagRegistry(MeshMod_RegistryHandle handle);
-static uint64_t const UserDataMask = 0x00000000000FFFF;
+static uint64_t const UserDataMask = 0x00FF0000000000FF;
 typedef struct MeshMod_RegistryItem {
 	MeshMod_Type type;
 	size_t elementSize;
