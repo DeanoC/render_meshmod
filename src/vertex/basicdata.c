@@ -81,7 +81,7 @@ AL2O3_EXTERN_C double MeshMod_Vertex##postfix##Distance(void const* va, void con
 AL2O3_EXTERN_C void MeshMod_Vertex##postfix##Interpolate1D(void const* va, void const* vb, void* vr, float const t) { \
 	MeshMod_Vertex##postfix const* a = (MeshMod_Vertex##postfix const*)va; \
 	MeshMod_Vertex##postfix const* b = (MeshMod_Vertex##postfix const*)vb; \
-	MeshMod_Vertex##postfix* r = (MeshMod_Vertex##postfix##*)vr; \
+	MeshMod_Vertex##postfix *r = (MeshMod_Vertex##postfix*)vr; \
 	*r = Math_Lerp##postfix(*a, *b, t); \
 } \
 AL2O3_EXTERN_C void MeshMod_Vertex##postfix##Interpolate2D(void const* va, void const* vb, void const* vc, void* vr, float const u, float const v) { \
