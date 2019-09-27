@@ -6,6 +6,6 @@
 #include "al2o3_cmath/vector.h"
 
 #define MeshMod_VertexUvTag MESHMOD_VERTEXTAG('U', 'V', '_', '2', 'F')
-typedef Math_Vec2F_t MeshMod_VertexUv;
+typedef Math_Vec2F MeshMod_VertexUv;
 
 #endif

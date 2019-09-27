@@ -4,7 +4,7 @@
 #include "gfx_meshmod/registry.h"
 
 static void* VertexUvDefaultData() {
-	static Math_Vec2F_t nan = { NAN, NAN };
+	static Math_Vec2F nan = { NAN, NAN };
 	return &nan;
 }
 

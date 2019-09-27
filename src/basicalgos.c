@@ -20,7 +20,7 @@ AL2O3_EXTERN_C MeshMod_DataAabb3F const* MeshMod_MeshComputeExtents3F(MeshMod_Me
 		aabb->hash = hash;
 		CADT_VectorHandle v = MeshMod_DataContainerConstLookup(dc, tag);
 		for (size_t i = 0; i < CADT_VectorSize(v); ++i) {
-			Math_Vec3F_t d = *(Math_Vec3F_t*)CADT_VectorAt(v, i);
+			Math_Vec3F d = *(Math_Vec3F*)CADT_VectorAt(v, i);
 			Math_ExpandAabb3F(&aabb->aabb, d);
 		}
 	}

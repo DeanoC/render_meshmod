@@ -26,22 +26,22 @@
 
 
 #define MESHMOD_VT_VECTOR_REAL(postfix) \
-	typedef Math_Vec##postfix##_t MeshMod_VertexVec##postfix; \
-	AL2O3_EXTERN_C bool MeshMod_VertexVec##postfix##Equal(void const* va, void const* vb, float const epsilon); \
-	AL2O3_EXTERN_C double MeshMod_VertexVec##postfix##Distance(void const* va, void const* vb); \
-	AL2O3_EXTERN_C void MeshMod_VertexVec##postfix##Interpolate1D(void const* va,	void const* vb,	void* vr,	float const t); \
-	AL2O3_EXTERN_C void MeshMod_VertexVec##postfix##Interpolate2D(void const* va, void const* vb, void const* vc, void* vr, float const u, float const v);
+	typedef Math_##postfix MeshMod_Vertex##postfix; \
+	AL2O3_EXTERN_C bool MeshMod_Vertex##postfix##Equal(void const* va, void const* vb, float const epsilon); \
+	AL2O3_EXTERN_C double MeshMod_Vertex##postfix##Distance(void const* va, void const* vb); \
+	AL2O3_EXTERN_C void MeshMod_Vertex##postfix##Interpolate1D(void const* va,	void const* vb,	void* vr,	float const t); \
+	AL2O3_EXTERN_C void MeshMod_Vertex##postfix##Interpolate2D(void const* va, void const* vb, void const* vc, void* vr, float const u, float const v);
 
 
 MESHMOD_VT_REAL(F, float)
 MESHMOD_VT_REAL(D, double)
 
-MESHMOD_VT_VECTOR_REAL(2F)
-MESHMOD_VT_VECTOR_REAL(3F)
-MESHMOD_VT_VECTOR_REAL(4F)
-MESHMOD_VT_VECTOR_REAL(2D)
-MESHMOD_VT_VECTOR_REAL(3D)
-MESHMOD_VT_VECTOR_REAL(4D)
+MESHMOD_VT_VECTOR_REAL(Vec2F)
+MESHMOD_VT_VECTOR_REAL(Vec3F)
+MESHMOD_VT_VECTOR_REAL(Vec4F)
+MESHMOD_VT_VECTOR_REAL(Vec2D)
+MESHMOD_VT_VECTOR_REAL(Vec3D)
+MESHMOD_VT_VECTOR_REAL(Vec4D)
 
 #undef MESHMOD_VT_REAL
 #undef MESHMOD_VT_VECTOR_REAL

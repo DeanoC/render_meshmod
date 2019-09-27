@@ -3,7 +3,7 @@
 #include "gfx_meshmod/vertex/position.h"
 #include "gfx_meshmod/registry.h"
 static void* VertexPositionDefaultData() {
-	static Math_Vec3F_t nan = { NAN, NAN, NAN };
+	static Math_Vec3F nan = { NAN, NAN, NAN };
 	return &nan;
 }
 

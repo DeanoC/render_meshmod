@@ -55,14 +55,14 @@ AL2O3_EXTERN_C void MeshMod_Vertex##postfix##AddToRegistry(MeshMod_RegistryHandl
 }
 
 static void const* VertexVec4FDefaultData() {
-	static Math_Vec4F_t nan = { NAN, NAN, NAN, NAN };
+	static Math_Vec4F nan = { NAN, NAN, NAN, NAN };
 	return &nan;
 }
 static void const* VertexVec4DDefaultData() {
-	static Math_Vec4D_t nan = { NAN, NAN, NAN, NAN };
+	static Math_Vec4D nan = { NAN, NAN, NAN, NAN };
 	return &nan;
 }
-static void const* VertexVec2FDefaultData() {	return VertexVec4FDefaultData(); }
+static void const* VertexVec2FDefaultData() { return VertexVec4FDefaultData(); }
 static void const* VertexVec3FDefaultData() { return VertexVec4FDefaultData(); }
 static void const* VertexVec2DDefaultData() { return VertexVec4DDefaultData(); }
 static void const* VertexVec3DDefaultData() { return VertexVec4DDefaultData(); }

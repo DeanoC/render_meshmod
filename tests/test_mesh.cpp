@@ -47,17 +47,17 @@ TEST_CASE("Mesh vertex", "[MeshMod Mesh]") {
 	REQUIRE(posVec);
 	MeshMod_VertexPosition* pos0 = (MeshMod_VertexPosition *)CADT_VectorAt(posVec, 0);
 	REQUIRE(pos0);
-	REQUIRE(Math_IsNan3F(*pos0));
+	REQUIRE(Math_IsNanVec3F(*pos0));
 
 	MeshMod_DataContainerResize(vhandle, 100);
 	REQUIRE(MeshMod_DataContainerSize(vhandle) == 100);
 	pos0 = (MeshMod_VertexPosition*)CADT_VectorAt(posVec, 0);
 	MeshMod_VertexPosition* pos10 = (MeshMod_VertexPosition*)CADT_VectorAt(posVec, 10);
 	REQUIRE(pos0);
-	REQUIRE(Math_IsNan3F(*pos0));
+	REQUIRE(Math_IsNanVec3F(*pos0));
 	REQUIRE(pos10);
-	REQUIRE(Math_IsNan3F(*pos10));
-	Math_Vec3F_t const val = { 10.0f, 20.0f, 30.0f };
+	REQUIRE(Math_IsNanVec3F(*pos10));
+	Math_Vec3F const val = { 10.0f, 20.0f, 30.0f };
 	*pos10 =  val;
 	pos10 = (MeshMod_VertexPosition*)CADT_VectorAt(posVec, 10);
 	REQUIRE(pos10);
@@ -87,7 +87,7 @@ TEST_CASE("Mesh vertex", "[MeshMod Mesh]") {
 	REQUIRE_FALSE(MeshMod_DataContainerIsValid(vhandle, 0));
 	MeshMod_VertexPosition* pos9 = (MeshMod_VertexPosition*)CADT_VectorAt(posVec, 9);
 	pos10 = (MeshMod_VertexPosition*)CADT_VectorAt(posVec, 10);
-	Math_Vec3F_t const val9 = { 9.0f, 18.0f, 27.0f };
+	Math_Vec3F const val9 = { 9.0f, 18.0f, 27.0f };
 	*pos9 = val9;
 	*pos10 = val;
 	REQUIRE(Math_ApproxEqualVec3F(*pos9, val9, 0.0f));
@@ -120,15 +120,15 @@ TEST_CASE("Mesh vertex interpolation", "[MeshMod Mesh]") {
 
 	MeshMod_DataContainerHandle vhandle = MeshMod_MeshGetVertices(handle);
 	REQUIRE(MeshMod_DataContainerAdd(vhandle, MeshMod_VertexVec2FTag));
-	REQUIRE(sizeof(Math_Vec2F_t) == sizeof(MeshMod_VertexVec2F));
+	REQUIRE(sizeof(Math_Vec2F) == sizeof(MeshMod_VertexVec2F));
 
 	MeshMod_DataContainerResize(vhandle, 3);
 	CADT_VectorHandle posVec = MeshMod_DataContainerMutableLookup(vhandle, MeshMod_VertexVec2FTag);
-	Math_Vec2F_t* poses = (Math_Vec2F_t*)CADT_VectorAt(posVec, 0);
+	Math_Vec2F* poses = (Math_Vec2F*)CADT_VectorAt(posVec, 0);
 	REQUIRE(poses);
-	Math_Vec2F_t const a = { 0.0f, 0.0f };
-	Math_Vec2F_t const b = { 0.0f, 1.0f };
-	Math_Vec2F_t const c = { 1.0f, 0.0f };
+	Math_Vec2F const a = { 0.0f, 0.0f };
+	Math_Vec2F const b = { 0.0f, 1.0f };
+	Math_Vec2F const c = { 1.0f, 0.0f };
 	*(poses + 0) = a;
 	*(poses + 1) = b;
 	*(poses + 2) = c;
@@ -143,7 +143,7 @@ TEST_CASE("Mesh vertex interpolation", "[MeshMod Mesh]") {
 	REQUIRE(MeshMod_DataContainerVertexInterpolate2D(vhandle, 0, 1, 2, 0.0f, 0.0f) == 5);
 	REQUIRE(MeshMod_DataContainerVertexInterpolate2D(vhandle, 0, 1, 2, 1.0f, 0.0f) == 6);
 	REQUIRE(MeshMod_DataContainerVertexInterpolate2D(vhandle, 0, 1, 2, 0.0f, 1.0f) == 7);
-	Math_Vec2F_t* result = (Math_Vec2F_t*)CADT_VectorAt(posVec, 0);
+	Math_Vec2F* result = (Math_Vec2F*)CADT_VectorAt(posVec, 0);
 	REQUIRE(result);
 	REQUIRE(Math_ApproxEqualVec2F(a, result[3], 1e-5f));
 	REQUIRE(Math_ApproxEqualVec2F(b, result[4], 1e-5f));
@@ -178,16 +178,16 @@ TEST_CASE("Mesh Position Extents", "[MeshMod Mesh]") {
 	REQUIRE(MeshMod_DataContainerAdd(vhandle, MeshMod_VertexPositionTag));
 	REQUIRE_FALSE(MeshMod_DataContainerAdd(vhandle, MeshMod_VertexPositionTag));
 
-	Math_Vec3F_t tri[3] = {
+	Math_Vec3F tri[3] = {
 		-1.0f, -2.0f, -3.0f,
 		1.0f, 2.0f, 3.0f,
 		-1.0f, 4.0f, -3.0f,
 	};
-	ASSERT(sizeof(Math_Vec3F_t) == sizeof(MeshMod_VertexPosition));
+	ASSERT(sizeof(Math_Vec3F) == sizeof(MeshMod_VertexPosition));
 	CADT_VectorHandle posv = MeshMod_DataContainerMutableLookup(vhandle, MeshMod_VertexPositionTag);
 	MeshMod_DataContainerResize(vhandle, 3);
-	Math_Vec3F_t* data = (MeshMod_VertexPosition*)CADT_VectorData(posv);
-	memcpy(data, tri, sizeof(Math_Vec3F_t) * 3);
+	Math_Vec3F* data = (MeshMod_VertexPosition*)CADT_VectorData(posv);
+	memcpy(data, tri, sizeof(Math_Vec3F) * 3);
 
 	MeshMod_DataAabb3F const* aabb = MeshMod_MeshComputeExtents3F(handle, MeshMod_VertexPositionTag);
 	REQUIRE(aabb->dataTag == MESHMOD_HASHTAG(MeshMod_VertexPositionTag));
@@ -202,14 +202,14 @@ TEST_CASE("Mesh Position Extents", "[MeshMod Mesh]") {
 	aabb = MeshMod_MeshComputeExtents3F(handle, MeshMod_VertexPositionTag);
 	REQUIRE(aabb->hash == hash);
 
-	Math_Vec3F_t tri2[3] = {
+	Math_Vec3F tri2[3] = {
 	-10.0f, -2.0f, -30.0f,
 	10.0f, 2.0f, 30.0f,
 	-10.0f, 4.0f, -30.0f,
 	};
 	MeshMod_DataContainerResize(vhandle, 6);
 	data = (MeshMod_VertexPosition*)CADT_VectorData(posv);
-	memcpy(data + 3, tri2, sizeof(Math_Vec3F_t) * 3);
+	memcpy(data + 3, tri2, sizeof(Math_Vec3F) * 3);
 	aabb = MeshMod_MeshComputeExtents3F(handle, MeshMod_VertexPositionTag);
 	REQUIRE(aabb->dataTag == MESHMOD_HASHTAG(MeshMod_VertexPositionTag));
 	REQUIRE(aabb->hash != hash);
