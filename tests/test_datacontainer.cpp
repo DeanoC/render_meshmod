@@ -1,7 +1,7 @@
 #include "al2o3_catch2/catch2.hpp"
-#include "gfx_meshmod/registry.h"
-#include "gfx_meshmod/datacontainer.h"
-#include "gfx_meshmod/vertex/position.h"
+#include "render_meshmod/registry.h"
+#include "render_meshmod/datacontainer.h"
+#include "render_meshmod/vertex/position.h"
 
 TEST_CASE("DataContainer create/destroy", "[MeshMod DataContainer]") {
 

@@ -8,7 +8,7 @@
 #if !defined( MESH_MOD_TYPES_H_ )
 #define MESH_MOD_TYPES_H_
 
-#include "gfx_meshmod/indextypes.h"
+#include "render_meshmod/indextypes.h"
 
 namespace MeshMod
 {

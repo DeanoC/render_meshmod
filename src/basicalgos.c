@@ -1,5 +1,5 @@
-#include "gfx_meshmod/basicalgos.h"
-#include "gfx_meshmod/data/aabb.h"
+#include "render_meshmod/basicalgos.h"
+#include "render_meshmod/data/aabb.h"
 
 AL2O3_EXTERN_C MeshMod_DataAabb3F const* MeshMod_MeshComputeExtents3F(MeshMod_MeshHandle handle, MeshMod_Tag tag) {
 	MeshMod_DataContainerHandle dc = MeshMod_MeshGetVertices(handle);

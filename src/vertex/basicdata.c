@@ -1,6 +1,6 @@
 #include "al2o3_platform/platform.h"
-#include "gfx_meshmod/vertex/basicdata.h"
-#include "gfx_meshmod/registry.h"
+#include "render_meshmod/vertex/basicdata.h"
+#include "render_meshmod/registry.h"
 
 #define VT_REAL(postfix, type) \
 static char const* Vertex##postfix##Description() { \

@@ -15,7 +15,7 @@ if(NOT hasParent)
 endif ()
 
 SET_MIN_VERSIONS()
-set(LibName gfx_meshmod)
+set(LibName render_meshmod)
 project(${LibName})
 
 set(Interface

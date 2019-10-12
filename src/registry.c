@@ -2,7 +2,7 @@
 #include "al2o3_memory/memory.h"
 #include "al2o3_cadt/vector.h"
 #include "al2o3_cadt/dict.h"
-#include "gfx_meshmod/registry.h"
+#include "render_meshmod/registry.h"
 #include <stddef.h>
 
 extern void MeshMod_AddVertexDefaultsToTagRegistry(MeshMod_RegistryHandle handle);

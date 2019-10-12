@@ -1,12 +1,12 @@
 #include "al2o3_catch2/catch2.hpp"
-#include "gfx_meshmod/registry.h"
-#include "gfx_meshmod/mesh.h"
-#include "gfx_meshmod/vertex/basicdata.h"
-#include "gfx_meshmod/vertex/position.h"
-#include "gfx_meshmod/edge/halfedge.h"
-#include "gfx_meshmod/polygon/tribrep.h"
-#include "gfx_meshmod/data/aabb.h"
-#include "gfx_meshmod/basicalgos.h"
+#include "render_meshmod/registry.h"
+#include "render_meshmod/mesh.h"
+#include "render_meshmod/vertex/basicdata.h"
+#include "render_meshmod/vertex/position.h"
+#include "render_meshmod/edge/halfedge.h"
+#include "render_meshmod/polygon/tribrep.h"
+#include "render_meshmod/data/aabb.h"
+#include "render_meshmod/basicalgos.h"
 
 TEST_CASE("Mesh Create", "[MeshMod Mesh]") {
 

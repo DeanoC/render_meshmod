@@ -1,7 +1,7 @@
 #include "al2o3_platform/platform.h"
-#include "gfx_meshmod/vertex/basicdata.h"
-#include "gfx_meshmod/vertex/uv.h"
-#include "gfx_meshmod/registry.h"
+#include "render_meshmod/vertex/basicdata.h"
+#include "render_meshmod/vertex/uv.h"
+#include "render_meshmod/registry.h"
 
 static void* VertexUvDefaultData() {
 	static Math_Vec2F nan = { NAN, NAN };

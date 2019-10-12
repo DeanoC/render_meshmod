@@ -1,6 +1,6 @@
 #include "al2o3_platform/platform.h"
-#include "gfx_meshmod/polygon/tribrep.h"
-#include "gfx_meshmod/registry.h"
+#include "render_meshmod/polygon/tribrep.h"
+#include "render_meshmod/registry.h"
 
 static void* PolygonTriBRepDefaultData() {
 	static MeshMod_PolygonTriBRep invalid = { MeshMod_InvalidIndex, MeshMod_InvalidIndex, MeshMod_InvalidIndex };

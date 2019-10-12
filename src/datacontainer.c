@@ -3,8 +3,8 @@
 #include "al2o3_cadt/bagofvectors.h"
 #include "al2o3_cadt/vector.h"
 #include "al2o3_cadt/dict.h"
-#include "gfx_meshmod/datacontainer.h"
-#include "gfx_meshmod/mesh.h"
+#include "render_meshmod/datacontainer.h"
+#include "render_meshmod/mesh.h"
 
 #include "al2o3_lz4/lz4.h"
 

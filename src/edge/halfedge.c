@@ -1,7 +1,7 @@
 #include "al2o3_platform/platform.h"
-#include "gfx_meshmod/meshmod.h"
-#include "gfx_meshmod/edge/halfedge.h"
-#include "gfx_meshmod/registry.h"
+#include "render_meshmod/meshmod.h"
+#include "render_meshmod/edge/halfedge.h"
+#include "render_meshmod/registry.h"
 
 static void* EdgeHalfEdgeDefaultData() {
 	static MeshMod_EdgeHalfEdge invalid = { MeshMod_InvalidIndex, MeshMod_InvalidIndex };

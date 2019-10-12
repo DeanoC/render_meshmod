@@ -1,6 +1,6 @@
 #include "al2o3_platform/platform.h"
-#include "gfx_meshmod/vertex/similar.h"
-#include "gfx_meshmod/registry.h"
+#include "render_meshmod/vertex/similar.h"
+#include "render_meshmod/registry.h"
 static void* VertexSimilarDefaultData() {
 	static MeshMod_VertexIndex invalid = MeshMod_InvalidIndex;
 	return &invalid;

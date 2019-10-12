@@ -1,5 +1,5 @@
 #include "al2o3_platform/platform.h"
-#include "gfx_meshmod/meshmod.h"
+#include "render_meshmod/meshmod.h"
 #include "halfedgedata/halfedgedata.h"
 #include "polygons.h"
 #include "halfedges.h"
