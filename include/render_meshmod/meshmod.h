@@ -3,8 +3,7 @@
 #define GFX_MESHMOD_MESHMOD_H
 
 #include "al2o3_platform/platform.h"
-
-typedef struct MeshMod_Mesh *MeshMod_MeshHandle;
+#include "render_meshmod/handles.h"
 
 // the top byte is the MeshMod_Type (ascii 'V', 'E', 'P')
 // the next byte is sub type data (currently ascii 'H' for hash)
@@ -30,10 +29,8 @@ typedef enum Mesh_SubType {
 #define MESHMOD_SUBTYPE_TAG(subtype, tag) (MeshMod_Tag)( (tag) | (uint64_t)(subtype) << 48)
 #define MESHMOD_HASHTAG(tag) MESHMOD_SUBTYPE_TAG(MeshMod_SubTypeHash, tag)
 
-
-#define MeshMod_InvalidIndex 0xFFFFFFFFFFFFFFFFUL
-typedef size_t MeshMod_VertexIndex;
-typedef size_t MeshMod_EdgeIndex;
-typedef size_t MeshMod_PolygonIndex;
+// call these as you start and stop using meshmod, they setup a few globals safely
+AL2O3_EXTERN_C void MeshMod_StartUp(void);
+AL2O3_EXTERN_C void MeshMod_Shutdown(void);
 
 #endif // GFX_MESHMOD_MESHMOD_H

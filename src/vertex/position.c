@@ -2,7 +2,7 @@
 #include "render_meshmod/vertex/basicdata.h"
 #include "render_meshmod/vertex/position.h"
 #include "render_meshmod/registry.h"
-static void* VertexPositionDefaultData() {
+static void const* VertexPositionDefaultData() {
 	static Math_Vec3F nan = { NAN, NAN, NAN };
 	return &nan;
 }
@@ -14,12 +14,11 @@ static char const* VertexPositionDescription() {
 AL2O3_EXTERN_C void MeshMod_VertexPositionAddToRegistry(MeshMod_RegistryHandle handle) {
 
 	static MeshMod_RegistryCommonFunctionTable CommonFunctionTable = {
-		&VertexPositionDefaultData,
-		&MeshMod_VertexVec3FEqual,
-		NULL,
-		&VertexPositionDescription,
-		NULL,
-		&MeshMod_VertexVec3FDistance,
+		.defaultDataFunc = &VertexPositionDefaultData,
+		.equalFunc = &MeshMod_VertexVec3FEqual,
+		.destroyFunc = NULL,
+		.descriptionFunc = &VertexPositionDescription,
+		.distanceFunc = &MeshMod_VertexVec3FDistance,
 
 	};
 

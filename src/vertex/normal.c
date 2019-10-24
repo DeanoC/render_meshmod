@@ -2,7 +2,7 @@
 #include "render_meshmod/vertex/basicdata.h"
 #include "render_meshmod/vertex/normal.h"
 #include "render_meshmod/registry.h"
-static void* VertexNormalDefaultData() {
+static void const* VertexNormalDefaultData() {
 	static Math_Vec3F nan = { NAN, NAN, NAN };
 	return &nan;
 }
@@ -14,12 +14,11 @@ static char const* VertexNormalDescription() {
 AL2O3_EXTERN_C void MeshMod_VertexNormalAddToRegistry(MeshMod_RegistryHandle handle) {
 
 	static MeshMod_RegistryCommonFunctionTable CommonFunctionTable = {
-		&VertexNormalDefaultData,
-		&MeshMod_VertexVec3FEqual,
-		NULL,
-		&VertexNormalDescription,
-		NULL,
-		&MeshMod_VertexVec3FDistance,
+		.defaultDataFunc = &VertexNormalDefaultData,
+		.equalFunc = &MeshMod_VertexVec3FEqual,
+		.destroyFunc = NULL,
+		.descriptionFunc = &VertexNormalDescription,
+		.distanceFunc = &MeshMod_VertexVec3FDistance,
 	};
 
 	static MeshMod_RegistryVertexFunctionTable VertexFunctionTable = {

@@ -1,7 +1,4 @@
 #include "al2o3_platform/platform.h"
-#include "al2o3_memory/memory.h"
-#include "al2o3_cadt/bagofvectors.h"
-#include "render_meshmod/mesh.h"
 #include "render_meshmod/registry.h"
 
 #define REGISTER_TYPE(x) \
@@ -10,4 +7,6 @@
 
 void MeshMod_AddPolygonDefaultsToTagRegistry(MeshMod_RegistryHandle handle) {
 	REGISTER_TYPE(PolygonTriBRep)
+	REGISTER_TYPE(PolygonQuadBRep)
+	REGISTER_TYPE(PolygonConvexBRep)
 }

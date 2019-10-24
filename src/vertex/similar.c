@@ -1,8 +1,8 @@
 #include "al2o3_platform/platform.h"
 #include "render_meshmod/vertex/similar.h"
 #include "render_meshmod/registry.h"
-static void* VertexSimilarDefaultData() {
-	static MeshMod_VertexIndex invalid = MeshMod_InvalidIndex;
+static void const* VertexSimilarDefaultData() {
+	static MeshMod_VertexHandle invalid = {0};
 	return &invalid;
 }
 
@@ -14,13 +14,13 @@ static bool VertexSimilarEqual(void const* va, void const* vb, float const epsil
 	
 	MeshMod_VertexSimilar const* a = (MeshMod_VertexSimilar const*)va; 
 	MeshMod_VertexSimilar const* b = (MeshMod_VertexSimilar const*)vb; 
-	return *a == *b; 
+	return a->handle.handle == b->handle.handle;
 }; 
 
 static double VertexSimilarDistance(void const* va, void const* vb) {
 	MeshMod_VertexSimilar const* a = (MeshMod_VertexSimilar const*)va;
 	MeshMod_VertexSimilar const* b = (MeshMod_VertexSimilar const*)vb;
-	return (double)*a == (double)*b;
+	return (double)a->handle.handle == (double)b->handle.handle;
 };
 static bool VertexSimilarIsTransitory() {
 	return true;
@@ -28,12 +28,11 @@ static bool VertexSimilarIsTransitory() {
 AL2O3_EXTERN_C void MeshMod_VertexSimilarAddToRegistry(MeshMod_RegistryHandle handle) {
 
 	static MeshMod_RegistryCommonFunctionTable CommonFunctionTable = {
-		&VertexSimilarDefaultData,
-		&VertexSimilarEqual,
-		NULL,
-		&VertexSimilarDescription,
-		&VertexSimilarIsTransitory,
-		&VertexSimilarDistance
+		.defaultDataFunc = &VertexSimilarDefaultData,
+		.equalFunc = &VertexSimilarEqual,
+		.destroyFunc = NULL,
+		.descriptionFunc = &VertexSimilarDescription,
+		.distanceFunc = &VertexSimilarDistance
 	};
 
 	static MeshMod_RegistryVertexFunctionTable VertexFunctionTable = {

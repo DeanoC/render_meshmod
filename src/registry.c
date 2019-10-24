@@ -3,6 +3,7 @@
 #include "al2o3_cadt/vector.h"
 #include "al2o3_cadt/dict.h"
 #include "render_meshmod/registry.h"
+#include "registry.h"
 #include <stddef.h>
 
 extern void MeshMod_AddVertexDefaultsToTagRegistry(MeshMod_RegistryHandle handle);
@@ -10,30 +11,11 @@ extern void MeshMod_AddEdgeDefaultsToTagRegistry(MeshMod_RegistryHandle handle);
 extern void MeshMod_AddPolygonDefaultsToTagRegistry(MeshMod_RegistryHandle handle);
 static uint64_t const UserDataMask = 0x00FF0000000000FF;
 
-typedef struct MeshMod_RegistryItem {
-	MeshMod_Type type;
-	size_t elementSize;
-	char const* description;
-
-	MeshMod_RegistryCommonFunctionTable* commonFunctionTable;
-
-	union {
-		void* functionTable;
-		MeshMod_RegistryVertexFunctionTable* vertexFunctionTable;
-		MeshMod_RegistryEdgeFunctionTable* edgeFunctionTable;
-		MeshMod_RegistryPolygonFunctionTable* polygonFunctionTable;
-	};
-
-} MeshMod_RegistryItem;
-
-typedef struct MeshMod_Registry {
-	CADT_VectorHandle registry;
-	CADT_DictU64Handle tagDictionary;
-} MeshMod_Registry;
 
 static MeshMod_RegistryItem* LookupRegistryItem(MeshMod_RegistryHandle handle, MeshMod_Tag tag) {
-	ASSERT(handle);
-	MeshMod_Registry* reg = (MeshMod_Registry*)handle;
+	ASSERT(MeshMod_RegistryHandleIsValid(handle));
+	MeshMod_Registry* reg = MeshMod_RegistryHandleToPtr(handle);
+
 	ASSERT(CADT_DictU64KeyExists(reg->tagDictionary, tag & ~UserDataMask));
 
 	uint64_t index = 0;
@@ -46,22 +28,27 @@ static MeshMod_RegistryItem* LookupRegistryItem(MeshMod_RegistryHandle handle, M
 }
 
 AL2O3_EXTERN_C MeshMod_RegistryHandle MeshMod_RegistryCreate() {
-	MeshMod_Registry* reg = MEMORY_CALLOC(1, sizeof(MeshMod_Registry));
-	if (reg == NULL)
-		return NULL;
+	MeshMod_RegistryHandle handle = MeshMod_RegistryHandleAlloc();
+	if(!MeshMod_RegistryHandleIsValid(handle)) {
+		MeshMod_RegistryHandle invalid = {0};
+		return invalid;
+	}
 
+	MeshMod_Registry* reg = MeshMod_RegistryHandleToPtr(handle);
 	reg->registry = CADT_VectorCreate(sizeof(MeshMod_RegistryItem));
 	if (reg->registry == NULL) {
-		MEMORY_FREE(reg);
-		return NULL;
+		MeshMod_RegistryDestroy(handle);
+		MeshMod_RegistryHandle invalid = {0};
+		return invalid;
 	}
 	reg->tagDictionary = CADT_DictU64Create();
 	if (reg->tagDictionary == NULL) {
-		CADT_VectorDestroy(reg->registry);
-		MEMORY_FREE(reg);
+		MeshMod_RegistryDestroy(handle);
+		MeshMod_RegistryHandle invalid = {0};
+		return invalid;
 	}
 
-	return reg;
+	return handle;
 }
 
 AL2O3_EXTERN_C MeshMod_RegistryHandle MeshMod_RegistryCreateWithDefaults() {
@@ -75,12 +62,12 @@ AL2O3_EXTERN_C MeshMod_RegistryHandle MeshMod_RegistryCreateWithDefaults() {
 }
 
 AL2O3_EXTERN_C void MeshMod_RegistryDestroy(MeshMod_RegistryHandle handle) {
-	ASSERT(handle);
-	MeshMod_Registry* reg = (MeshMod_Registry*)handle;
+	ASSERT(MeshMod_RegistryHandleIsValid(handle));
+	MeshMod_Registry* reg = MeshMod_RegistryHandleToPtr(handle);
 
 	CADT_DictU64Destroy(reg->tagDictionary);
 	CADT_VectorDestroy(reg->registry);
-	MEMORY_FREE(reg);
+	MeshMod_RegistryHandleRelease(handle);
 }
 
 AL2O3_EXTERN_C void MeshMod_RegistryAddType(	MeshMod_RegistryHandle handle,
@@ -88,8 +75,8 @@ AL2O3_EXTERN_C void MeshMod_RegistryAddType(	MeshMod_RegistryHandle handle,
 																							size_t elementSize,
 																							MeshMod_RegistryCommonFunctionTable* commonFunctionTable,
 																							void* functionTable) {
-	ASSERT(handle);
-	MeshMod_Registry* reg = (MeshMod_Registry*)handle;
+	ASSERT(MeshMod_RegistryHandleIsValid(handle));
+	MeshMod_Registry* reg = MeshMod_RegistryHandleToPtr(handle);
 
 	MeshMod_RegistryItem item;
 	item.type = (MeshMod_Type)(tag >> 56);
@@ -103,8 +90,9 @@ AL2O3_EXTERN_C void MeshMod_RegistryAddType(	MeshMod_RegistryHandle handle,
 }
 
 AL2O3_EXTERN_C bool MeshMod_RegistryExists(MeshMod_RegistryHandle handle, MeshMod_Tag tag) {
-	ASSERT(handle);
-	MeshMod_Registry* reg = (MeshMod_Registry*)handle;
+	ASSERT(MeshMod_RegistryHandleIsValid(handle));
+	MeshMod_Registry* reg = MeshMod_RegistryHandleToPtr(handle);
+
 	return CADT_DictU64KeyExists(reg->tagDictionary, tag & ~UserDataMask);
 }
 
@@ -128,6 +116,11 @@ AL2O3_EXTERN_C char const* MeshMod_RegistryDescription(MeshMod_RegistryHandle ha
 AL2O3_EXTERN_C void const* MeshMod_RegistryDefaultData(MeshMod_RegistryHandle handle, MeshMod_Tag tag) {
 	MeshMod_RegistryItem* item = LookupRegistryItem(handle, tag);
 	return item->commonFunctionTable->defaultDataFunc();
+}
+
+AL2O3_EXTERN_C bool MeshMod_RegisteryIsDefaultData(MeshMod_RegistryHandle handle, MeshMod_Tag tag, void const* testData) {
+	MeshMod_RegistryItem* item = LookupRegistryItem(handle, tag);
+	return memcmp(testData, item->commonFunctionTable->defaultDataFunc(), item->elementSize) == 0;
 }
 
 AL2O3_EXTERN_C MeshMod_RegistryCommonFunctionTable* MeshMod_RegistryGetCommonFunctionTable(MeshMod_RegistryHandle handle, MeshMod_Tag tag) {

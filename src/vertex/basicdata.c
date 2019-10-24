@@ -36,12 +36,11 @@ AL2O3_EXTERN_C void MeshMod_Vertex##postfix##Interpolate2D(void const* va, void 
 }; \
 AL2O3_EXTERN_C void MeshMod_Vertex##postfix##AddToRegistry(MeshMod_RegistryHandle handle) { \
 	static MeshMod_RegistryCommonFunctionTable CommonFunctionTable = { \
-		&MeshMod_Vertex##postfix##DefaultData, \
-		&MeshMod_Vertex##postfix##Equal, \
-		NULL,	\
-		&Vertex##postfix##Description, \
-		NULL, \
-		&MeshMod_Vertex##postfix##Distance, \
+		.defaultDataFunc = &MeshMod_Vertex##postfix##DefaultData, \
+		.equalFunc = &MeshMod_Vertex##postfix##Equal, \
+		.destroyFunc = NULL,	\
+		.descriptionFunc = &Vertex##postfix##Description, \
+		.distanceFunc = &MeshMod_Vertex##postfix##Distance, \
 	}; \
 	static MeshMod_RegistryVertexFunctionTable VertexFunctionTable = { \
 		&MeshMod_Vertex##postfix##Interpolate1D, \
@@ -99,12 +98,11 @@ static char const* Vertex##postfix##Description() { \
 } \
 AL2O3_EXTERN_C void MeshMod_Vertex##postfix##AddToRegistry(MeshMod_RegistryHandle handle) { \
 	static MeshMod_RegistryCommonFunctionTable CommonFunctionTable = { \
-		&Vertex##postfix##DefaultData, \
-		&MeshMod_Vertex##postfix##Equal, \
-		NULL, \
-		&Vertex##postfix##Description, \
-		NULL, \
-		&MeshMod_Vertex##postfix##Distance, \
+		.defaultDataFunc = &Vertex##postfix##DefaultData, \
+		.equalFunc = &MeshMod_Vertex##postfix##Equal, \
+		.destroyFunc = NULL, \
+		.descriptionFunc = &Vertex##postfix##Description, \
+		.distanceFunc = &MeshMod_Vertex##postfix##Distance, \
 	}; \
 	static MeshMod_RegistryVertexFunctionTable VertexFunctionTable = { \
 		&MeshMod_Vertex##postfix##Interpolate1D, \

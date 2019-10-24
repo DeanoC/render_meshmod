@@ -10,4 +10,7 @@
 AL2O3_EXTERN_C MeshMod_DataAabb2F const* MeshMod_MeshComputeExtents2F(MeshMod_MeshHandle handle, MeshMod_Tag tag);
 AL2O3_EXTERN_C MeshMod_DataAabb3F const* MeshMod_MeshComputeExtents3F(MeshMod_MeshHandle handle, MeshMod_Tag tag);
 
+// after return MeshMod_PolygonTriBRepTag data will be available
+AL2O3_EXTERN_C void MeshMod_MeshTrianglate(MeshMod_MeshHandle handle);
+
 #endif // GFX_MESHMOD_BASICALGOS_H

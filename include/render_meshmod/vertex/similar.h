@@ -11,6 +11,6 @@
 // if any vertex change happens.
 // makes certain spatial queryies fast and easy to reason about N dimenstional subset of a vertex
 #define MeshMod_VertexSimilarTag MESHMOD_VERTEXTAG('S', 'I', 'M', 'L', 'R')
-typedef MeshMod_VertexIndex MeshMod_VertexSimilar;
+typedef MeshMod_VertexHandle MeshMod_VertexSimilar;
 
 #endif

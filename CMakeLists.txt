@@ -18,56 +18,22 @@ SET_MIN_VERSIONS()
 set(LibName render_meshmod)
 project(${LibName})
 
-set(Interface
-		registry.h
-		meshmod.h
-		mesh.h
-		datacontainer.h
-		basicalgos.h
-		vertex/basicdata.h
-		vertex/position.h
-		vertex/normal.h
-		vertex/uv.h
-		vertex/similar.h
-		edge/halfedge.h
-		polygon/tribrep.h
-		)
+file(GLOB_RECURSE Src CONFIGURE_DEPENDS include/*.h include/*.hpp src/*.c src/*.cpp)
 
-set(Src
-		registry.c
-		mesh.c
-		datacontainer.c
-		basicalgos.c
-		vertex/basicdata.c
-		vertex/default.c
-		vertex/position.c
-		vertex/normal.c
-		vertex/uv.c
-		vertex/similar.c
-		edge/default.c
-		edge/halfedge.c
-		polygon/default.c
-		polygon/tribrep.c
-#		halfedges.cpp
-#		mesh.cpp
-#		polygons.cpp
-#		scenenode.cpp
-#		varicontainer.cpp
-#		vertices.cpp
-		)
 
 set(Deps
 		al2o3_platform
 		al2o3_memory
 		al2o3_cadt
 		al2o3_cmath
+		al2o3_handle
 		al2o3_vfile
 		al2o3_stb
 		al2o3_lz4
 		utils_misccpp
 		)
 
-ADD_LIB(${LibName} "${Interface}" "${Src}" "${Deps}")
+ADD_LIB2(${LibName} "${Src}" "${Deps}")
 
 set( Tests
 		runner.cpp
@@ -75,9 +41,12 @@ set( Tests
 		test_datacontainer.cpp
 		test_mesh.cpp
 		)
+file( GLOB_RECURSE Tests CONFIGURE_DEPENDS tests/*.cpp )
+
 set( TestDeps
 		utils_simple_logmanager
 		gfx_image_impl_basic
 		al2o3_catch2 )
-ADD_LIB_TESTS(${LibName} "${Interface}" "${Tests}" "${TestDeps}")
+
+ADD_LIB2_TESTS(${LibName} "${Tests}" "${TestDeps}")
 

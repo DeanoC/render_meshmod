@@ -5,14 +5,10 @@
 #include "al2o3_platform/platform.h"
 #include "render_meshmod/meshmod.h"
 
-
-typedef struct MeshMod_Registry* MeshMod_RegistryHandle;
-
 typedef void const *(*MeshMod_RegistryDefaultDataFunc)();
 typedef char const *(*MeshMod_RegistryDescriptionFunc)();
 typedef bool (*MeshMod_RegistryEqualFunc)(void const* a, void const* b, float const epsilon);
 typedef void * (*MeshMod_RegistryDestroyFunc)(void* element);
-typedef bool (*MeshMod_RegistryIsTransitoryFunc)();
 typedef double (*MeshMod_RegistryDistanceFunc)();
 
 typedef void (*MeshMod_RegistryVertexInterpolate1DFunc)(void const* a, void const* b, void* r, float const t);
@@ -23,7 +19,6 @@ typedef struct MeshMod_RegistryCommonFunctionTable {
 	MeshMod_RegistryEqualFunc equalFunc;
 	MeshMod_RegistryDestroyFunc destroyFunc; // can be null only set if really needs a destructor
 	MeshMod_RegistryDescriptionFunc descriptionFunc; // can be null
-	MeshMod_RegistryIsTransitoryFunc isTransitoryFunc; // can be null default to falses
 	MeshMod_RegistryDistanceFunc distanceFunc;
 } MeshMod_RegistryCommonFunctionTable;
 
@@ -58,6 +53,8 @@ AL2O3_EXTERN_C size_t MeshMod_RegistryElementSize(MeshMod_RegistryHandle handle,
 AL2O3_EXTERN_C MeshMod_Type MeshMod_RegistryType(MeshMod_RegistryHandle handle, MeshMod_Tag tag);
 AL2O3_EXTERN_C char const* MeshMod_RegistryDescription(MeshMod_RegistryHandle handle, MeshMod_Tag tag);
 AL2O3_EXTERN_C void const* MeshMod_RegistryDefaultData(MeshMod_RegistryHandle handle, MeshMod_Tag tag);
+AL2O3_EXTERN_C bool MeshMod_RegisteryIsDefaultData(MeshMod_RegistryHandle handle, MeshMod_Tag tag, void const* testData);
+
 AL2O3_EXTERN_C MeshMod_RegistryCommonFunctionTable* MeshMod_RegistryGetCommonFunctionTable(MeshMod_RegistryHandle handle, MeshMod_Tag tag);
 
 AL2O3_EXTERN_C void* MeshMod_RegistryFunctionTable(MeshMod_RegistryHandle handle, MeshMod_Tag tag, MeshMod_Type type);

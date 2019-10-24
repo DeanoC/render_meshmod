@@ -3,8 +3,8 @@
 #include "render_meshmod/edge/halfedge.h"
 #include "render_meshmod/registry.h"
 
-static void* EdgeHalfEdgeDefaultData() {
-	static MeshMod_EdgeHalfEdge invalid = { MeshMod_InvalidIndex, MeshMod_InvalidIndex };
+static void const* EdgeHalfEdgeDefaultData() {
+	static MeshMod_EdgeHalfEdge invalid = { {0}, {0} };
 	return &invalid;
 }
 
@@ -12,7 +12,7 @@ static bool EdgeHalfEdgeEqual(void const* va, void const* vb, float const epsilo
 {
 	MeshMod_EdgeHalfEdge const* a = (MeshMod_EdgeHalfEdge const*)va;
 	MeshMod_EdgeHalfEdge const* b = (MeshMod_EdgeHalfEdge const*)vb;
-	return	a->vertex == b->vertex && a->polygon == b->polygon;
+	return	a->vertex.handle.handle == b->vertex.handle.handle && a->polygon.handle.handle == b->polygon.handle.handle;
 }
 
 static char const* EdgeHalfEdgeDescription() {
@@ -22,10 +22,11 @@ static char const* EdgeHalfEdgeDescription() {
 AL2O3_EXTERN_C void MeshMod_EdgeHalfEdgeAddToRegistry(MeshMod_RegistryHandle handle) {
 
 	static MeshMod_RegistryCommonFunctionTable CommonFunctionTable = {
-		&EdgeHalfEdgeDefaultData,
-		&EdgeHalfEdgeEqual,
-		NULL,
-		&EdgeHalfEdgeDescription
+		.defaultDataFunc = &EdgeHalfEdgeDefaultData,
+		.equalFunc = &EdgeHalfEdgeEqual,
+		.destroyFunc = NULL,
+		.descriptionFunc = &EdgeHalfEdgeDescription,
+		.distanceFunc = NULL
 		};
 
 	static MeshMod_RegistryEdgeFunctionTable EdgeFunctionTable = {

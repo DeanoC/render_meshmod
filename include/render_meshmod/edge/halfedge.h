@@ -7,8 +7,8 @@
 
 #define MeshMod_EdgeHalfEdgeTag MESHMOD_EDGETAG('H', 'E', 'D', 'G', 'E')
 typedef struct MeshMod_EdgeHalfEdge {
-	MeshMod_VertexIndex vertex;
-	MeshMod_PolygonIndex polygon;
+	MeshMod_VertexHandle vertex;
+	MeshMod_PolygonHandle polygon;
 } MeshMod_EdgeHalfEdge;
 
 #endif
