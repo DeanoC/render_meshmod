@@ -6,7 +6,7 @@
 
 TEST_CASE("TagRegistry create/destroy", "[MeshMod Tag]") {
 	MeshMod_RegistryHandle handle = MeshMod_RegistryCreate();
-	REQUIRE(handle);
+	REQUIRE(MeshMod_RegistryHandleIsValid(handle));
 	MeshMod_RegistryDestroy(handle);
 }
 AL2O3_EXTERN_C MeshMod_RegistryCommonFunctionTable MeshMod_VertexPositionCommonFunctionTable;
@@ -16,7 +16,7 @@ AL2O3_EXTERN_C void MeshMod_VertexPositionAddToRegistry(MeshMod_RegistryHandle h
 
 TEST_CASE("TagRegistry add/exists", "[MeshMod Tag]") {
 	MeshMod_RegistryHandle handle = MeshMod_RegistryCreate();
-	REQUIRE(handle);
+	REQUIRE(MeshMod_RegistryHandleIsValid(handle));
 
 	MeshMod_VertexPositionAddToRegistry(handle);
 	REQUIRE(MeshMod_RegistryExists(handle, MeshMod_VertexPositionTag));
@@ -25,6 +25,7 @@ TEST_CASE("TagRegistry add/exists", "[MeshMod Tag]") {
 }
 TEST_CASE("TagRegistry exists with defaults", "[MeshMod Tag]") {
 	MeshMod_RegistryHandle handle = MeshMod_RegistryCreateWithDefaults();
+	REQUIRE(MeshMod_RegistryHandleIsValid(handle));
 
 	REQUIRE(MeshMod_RegistryExists(handle, MeshMod_VertexPositionTag));
 	REQUIRE(MeshMod_RegistryType(handle, MeshMod_VertexPositionTag) == MeshMod_TypeVertex);
@@ -38,7 +39,7 @@ TEST_CASE("TagRegistry exists with defaults", "[MeshMod Tag]") {
 
 TEST_CASE("TagRegistry lookup", "[MeshMod Tag]") {
 	MeshMod_RegistryHandle handle = MeshMod_RegistryCreateWithDefaults();
-	REQUIRE(handle);
+	REQUIRE(MeshMod_RegistryHandleIsValid(handle));
 
 	REQUIRE(MeshMod_RegistryElementSize(handle, MeshMod_VertexPositionTag) == sizeof(MeshMod_VertexPosition));
 	REQUIRE(strcmp(MeshMod_RegistryDescription(handle, MeshMod_VertexPositionTag), "Vertex Position") == 0);
