@@ -27,7 +27,7 @@ AL2O3_EXTERN_C void MeshMod_VertexNormalAddToRegistry(MeshMod_RegistryHandle han
 	};
 
 	MeshMod_RegistryAddType(handle,
-		MeshMod_VertexNormalTag,
+		MeshMod_VertexNormalTag.tag,
 		sizeof(MeshMod_VertexNormal),
 		&CommonFunctionTable,
 		&VertexFunctionTable);

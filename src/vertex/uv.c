@@ -28,7 +28,7 @@ AL2O3_EXTERN_C void MeshMod_VertexUvAddToRegistry(MeshMod_RegistryHandle handle)
 	};
 
 	MeshMod_RegistryAddType(handle,
-		MeshMod_VertexUvTag,
+		MeshMod_VertexUvTag.tag,
 		sizeof(MeshMod_VertexUv),
 		&CommonFunctionTable,
 		&VertexFunctionTable);

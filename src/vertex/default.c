@@ -6,6 +6,10 @@
 	MeshMod_Vertex##x##AddToRegistry(handle);
 
 void MeshMod_AddVertexDefaultsToTagRegistry(MeshMod_RegistryHandle handle) {
+	REGISTER_TYPE(U8);
+	REGISTER_TYPE(U16);
+	REGISTER_TYPE(U32);
+	REGISTER_TYPE(U64);
 	REGISTER_TYPE(F);
 	REGISTER_TYPE(D);
 	REGISTER_TYPE(Vec2F);

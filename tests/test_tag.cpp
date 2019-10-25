@@ -19,20 +19,20 @@ TEST_CASE("TagRegistry add/exists", "[MeshMod Tag]") {
 	REQUIRE(MeshMod_RegistryHandleIsValid(handle));
 
 	MeshMod_VertexPositionAddToRegistry(handle);
-	REQUIRE(MeshMod_RegistryExists(handle, MeshMod_VertexPositionTag));
-	REQUIRE(MeshMod_RegistryType(handle, MeshMod_VertexPositionTag) == MeshMod_TypeVertex);
+	REQUIRE(MeshMod_RegistryExists(handle, MeshMod_VertexPositionTag.tag));
+	REQUIRE(MeshMod_RegistryType(handle, MeshMod_VertexPositionTag.tag) == MeshMod_TypeVertex);
 	MeshMod_RegistryDestroy(handle);
 }
 TEST_CASE("TagRegistry exists with defaults", "[MeshMod Tag]") {
 	MeshMod_RegistryHandle handle = MeshMod_RegistryCreateWithDefaults();
 	REQUIRE(MeshMod_RegistryHandleIsValid(handle));
 
-	REQUIRE(MeshMod_RegistryExists(handle, MeshMod_VertexPositionTag));
-	REQUIRE(MeshMod_RegistryType(handle, MeshMod_VertexPositionTag) == MeshMod_TypeVertex);
-	REQUIRE(MeshMod_RegistryExists(handle, MeshMod_EdgeHalfEdgeTag));
-	REQUIRE(MeshMod_RegistryType(handle, MeshMod_EdgeHalfEdgeTag) == MeshMod_TypeEdge);
-	REQUIRE(MeshMod_RegistryExists(handle, MeshMod_PolygonTriBRepTag));
-	REQUIRE(MeshMod_RegistryType(handle, MeshMod_PolygonTriBRepTag) == MeshMod_TypePolygon);
+	REQUIRE(MeshMod_RegistryExists(handle, MeshMod_VertexPositionTag.tag));
+	REQUIRE(MeshMod_RegistryType(handle, MeshMod_VertexPositionTag.tag) == MeshMod_TypeVertex);
+	REQUIRE(MeshMod_RegistryExists(handle, MeshMod_EdgeHalfEdgeTag.tag));
+	REQUIRE(MeshMod_RegistryType(handle, MeshMod_EdgeHalfEdgeTag.tag) == MeshMod_TypeEdge);
+	REQUIRE(MeshMod_RegistryExists(handle, MeshMod_PolygonTriBRepTag.tag));
+	REQUIRE(MeshMod_RegistryType(handle, MeshMod_PolygonTriBRepTag.tag) == MeshMod_TypePolygon);
 
 	MeshMod_RegistryDestroy(handle);
 }
@@ -41,8 +41,8 @@ TEST_CASE("TagRegistry lookup", "[MeshMod Tag]") {
 	MeshMod_RegistryHandle handle = MeshMod_RegistryCreateWithDefaults();
 	REQUIRE(MeshMod_RegistryHandleIsValid(handle));
 
-	REQUIRE(MeshMod_RegistryElementSize(handle, MeshMod_VertexPositionTag) == sizeof(MeshMod_VertexPosition));
-	REQUIRE(strcmp(MeshMod_RegistryDescription(handle, MeshMod_VertexPositionTag), "Vertex Position") == 0);
+	REQUIRE(MeshMod_RegistryElementSize(handle, MeshMod_VertexPositionTag.tag) == sizeof(MeshMod_VertexPosition));
+	REQUIRE(strcmp(MeshMod_RegistryDescription(handle, MeshMod_VertexPositionTag.tag), "Vertex Position") == 0);
 
 	MeshMod_RegistryDestroy(handle);
 }

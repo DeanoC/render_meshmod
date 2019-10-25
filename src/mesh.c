@@ -158,7 +158,7 @@ AL2O3_EXTERN_C MeshMod_VertexHandle MeshMod_MeshVertexAlloc(MeshMod_MeshHandle h
 
 	return vhandle;
 }
-AL2O3_EXTERN_C MeshMod_VertexHandle MeshMod_MeshVertexeDuplicate(MeshMod_MeshHandle handle, MeshMod_VertexHandle srcHandle) {
+AL2O3_EXTERN_C MeshMod_VertexHandle MeshMod_MeshVertexDuplicate(MeshMod_MeshHandle handle, MeshMod_VertexHandle srcHandle) {
 	MeshMod_VertexHandle vhandle = {0};
 	vhandle = MeshMod_MeshVertexAlloc(handle);
 	if(!MeshMod_MeshVertexIsValid(handle, vhandle)) {
@@ -234,40 +234,59 @@ AL2O3_EXTERN_C MeshMod_VertexHandle MeshMod_MeshVertexIterate(MeshMod_MeshHandle
 }
 
 
-AL2O3_EXTERN_C void MeshMod_MeshVertexTagEnsure(MeshMod_MeshHandle mhandle, MeshMod_Tag tag) {
+AL2O3_EXTERN_C void MeshMod_MeshVertexTagEnsure(MeshMod_MeshHandle mhandle, MeshMod_VertexTag tag) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return;
 	}
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
-	MeshMod_DataContainerEnsure(mesh->vertices.dc, tag);
+	MeshMod_DataContainerTagEnsure(mesh->vertices.dc, tag.tag);
 }
-AL2O3_EXTERN_C bool MeshMod_MeshVertexTagExists(MeshMod_MeshHandle mhandle, MeshMod_Tag tag) {
+AL2O3_EXTERN_C bool MeshMod_MeshVertexTagExists(MeshMod_MeshHandle mhandle, MeshMod_VertexTag tag) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return false;
 	}
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
-	return MeshMod_DataContainerExists(mesh->vertices.dc, tag);
+	return MeshMod_DataContainerTagExists(mesh->vertices.dc, tag.tag);
 }
-AL2O3_EXTERN_C void MeshMod_MeshVertexTagRemove(MeshMod_MeshHandle mhandle, MeshMod_Tag tag) {
+AL2O3_EXTERN_C void MeshMod_MeshVertexTagRemove(MeshMod_MeshHandle mhandle, MeshMod_VertexTag tag) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return;
 	}
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
-	MeshMod_DataContainerRemove(mesh->vertices.dc, tag);
+	MeshMod_DataContainerTagRemove(mesh->vertices.dc, tag.tag);
 }
-AL2O3_EXTERN_C uint64_t MeshMod_MeshVertexTagComputeHash(MeshMod_MeshHandle mhandle, MeshMod_Tag tag) {
+AL2O3_EXTERN_C uint64_t MeshMod_MeshVertexTagGetOrComputeHash(MeshMod_MeshHandle mhandle, MeshMod_VertexTag tag) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return 0;
 	}
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
-	return MeshMod_DataContainerComputeHash(mesh->vertices.dc, tag);
+	return MeshMod_DataContainerTagGetOrComputeHash(mesh->vertices.dc, tag.tag);
 }
-AL2O3_EXTERN_C void* MeshMod_MeshVertexTagHandleToPtr(MeshMod_MeshHandle mhandle, MeshMod_Tag tag, MeshMod_VertexHandle handle) {
+AL2O3_EXTERN_C void* MeshMod_MeshVertexTagHandleToPtr(MeshMod_MeshHandle mhandle, MeshMod_VertexTag tag, MeshMod_VertexHandle handle) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return NULL;
 	}
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
-	return MeshMod_DataContainerHandleToPtr(mesh->vertices.dc, tag, handle.handle);
+	return MeshMod_DataContainerTagHandleToPtr(mesh->vertices.dc, tag.tag, handle.handle);
+}
+AL2O3_EXTERN_C void MeshMod_MeshVertexTagHandleToDefault(MeshMod_MeshHandle mhandle, MeshMod_VertexTag tag, MeshMod_VertexHandle handle) {
+	if(!MeshMod_MeshHandleIsValid(mhandle)) {
+		return;
+	}
+	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
+	MeshMod_DataContainerTagHandleToDefault(mesh->vertices.dc, tag.tag, handle.handle);
+}
+AL2O3_EXTERN_C MeshMod_VertexHandle MeshMod_MeshVertexTagIterate(MeshMod_MeshHandle mhandle, MeshMod_VertexTag tag, MeshMod_VertexHandle* previous) {
+	MeshMod_Mesh *mesh = MeshMod_MeshHandleToPtr(mhandle);
+	MeshMod_VertexHandle handle = MeshMod_MeshVertexIterate(mhandle, previous);
+
+	while (MeshMod_MeshVertexIsValid(mhandle, handle)) {
+		if (!MeshMod_RegisteryIsDefaultData(mesh->registry, tag.tag, MeshMod_MeshVertexTagHandleToPtr(mhandle, tag, handle))) {
+			return handle;
+		}
+		handle = MeshMod_MeshVertexIterate(mhandle, &handle);
+	}
+	return handle;
 }
 
 
@@ -379,41 +398,60 @@ AL2O3_EXTERN_C MeshMod_EdgeHandle MeshMod_MeshEdgeIterate(MeshMod_MeshHandle mha
 	return invalid;
 }
 
-AL2O3_EXTERN_C void MeshMod_MeshEdgeTagEnsure(MeshMod_MeshHandle mhandle, MeshMod_Tag tag) {
+AL2O3_EXTERN_C void MeshMod_MeshEdgeTagEnsure(MeshMod_MeshHandle mhandle, MeshMod_EdgeTag tag) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return;
 	}
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
-	MeshMod_DataContainerEnsure(mesh->edges.dc, tag);
+	MeshMod_DataContainerTagEnsure(mesh->edges.dc, tag.tag);
 
 }
-AL2O3_EXTERN_C bool MeshMod_MeshEdgeTagExists(MeshMod_MeshHandle mhandle, MeshMod_Tag tag) {
+AL2O3_EXTERN_C bool MeshMod_MeshEdgeTagExists(MeshMod_MeshHandle mhandle, MeshMod_EdgeTag tag) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return false;
 	}
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
-	return MeshMod_DataContainerExists(mesh->edges.dc, tag);
+	return MeshMod_DataContainerTagExists(mesh->edges.dc, tag.tag);
 }
-AL2O3_EXTERN_C void MeshMod_MeshEdgeTagRemove(MeshMod_MeshHandle mhandle, MeshMod_Tag tag) {
+AL2O3_EXTERN_C void MeshMod_MeshEdgeTagRemove(MeshMod_MeshHandle mhandle, MeshMod_EdgeTag tag) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return;
 	}
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
-	MeshMod_DataContainerRemove(mesh->edges.dc, tag);
+	MeshMod_DataContainerTagRemove(mesh->edges.dc, tag.tag);
 }
-AL2O3_EXTERN_C uint64_t MeshMod_MeshEdgeTagComputeHash(MeshMod_MeshHandle mhandle, MeshMod_Tag tag) {
+AL2O3_EXTERN_C uint64_t MeshMod_MeshEdgeTagGetOrComputeHash(MeshMod_MeshHandle mhandle, MeshMod_EdgeTag tag) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return 0;
 	}
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
-	return MeshMod_DataContainerComputeHash(mesh->edges.dc, tag);
+	return MeshMod_DataContainerTagGetOrComputeHash(mesh->edges.dc, tag.tag);
 }
-AL2O3_EXTERN_C void* MeshMod_MeshEdgeTagHandleToPtr(MeshMod_MeshHandle mhandle, MeshMod_Tag tag, MeshMod_EdgeHandle handle) {
+AL2O3_EXTERN_C void* MeshMod_MeshEdgeTagHandleToPtr(MeshMod_MeshHandle mhandle, MeshMod_EdgeTag tag, MeshMod_EdgeHandle handle) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return NULL;
 	}
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
-	return MeshMod_DataContainerHandleToPtr(mesh->edges.dc, tag, handle.handle);
+	return MeshMod_DataContainerTagHandleToPtr(mesh->edges.dc, tag.tag, handle.handle);
+}
+AL2O3_EXTERN_C void MeshMod_MeshEdgeTagHandleToDefault(MeshMod_MeshHandle mhandle, MeshMod_EdgeTag tag, MeshMod_EdgeHandle handle) {
+	if(!MeshMod_MeshHandleIsValid(mhandle)) {
+		return;
+	}
+	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
+	MeshMod_DataContainerTagHandleToDefault(mesh->edges.dc, tag.tag, handle.handle);
+}
+AL2O3_EXTERN_C MeshMod_EdgeHandle MeshMod_MeshEdgeTagIterate(MeshMod_MeshHandle mhandle, MeshMod_EdgeTag tag, MeshMod_EdgeHandle* previous) {
+	MeshMod_Mesh *mesh = MeshMod_MeshHandleToPtr(mhandle);
+	MeshMod_EdgeHandle handle = MeshMod_MeshEdgeIterate(mhandle, previous);
+
+	while (MeshMod_MeshEdgeIsValid(mhandle, handle)) {
+		if (!MeshMod_RegisteryIsDefaultData(mesh->registry, tag.tag, MeshMod_MeshEdgeTagHandleToPtr(mhandle, tag, handle))) {
+			return handle;
+		}
+		handle = MeshMod_MeshEdgeIterate(mhandle, &handle);
+	}
+	return handle;
 }
 
 // Polygon API
@@ -438,6 +476,7 @@ AL2O3_EXTERN_C MeshMod_PolygonHandle MeshMod_MeshPolygonDuplicate(MeshMod_MeshHa
 	MeshMod_MeshPolygonReplace(handle, srcHandle, phandle);
 	return phandle;
 }
+
 AL2O3_EXTERN_C void MeshMod_MeshPolygonRelease(MeshMod_MeshHandle mhandle, MeshMod_PolygonHandle phandle) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return;
@@ -504,76 +543,59 @@ AL2O3_EXTERN_C MeshMod_PolygonHandle MeshMod_MeshPolygonIterate(MeshMod_MeshHand
 	return invalid;
 }
 
-AL2O3_EXTERN_C void MeshMod_PolygonTagEnsure(MeshMod_MeshHandle mhandle, MeshMod_Tag tag) {
+AL2O3_EXTERN_C void MeshMod_MeshPolygonTagEnsure(MeshMod_MeshHandle mhandle, MeshMod_PolygonTag tag) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return;
 	}
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
-	MeshMod_DataContainerEnsure(mesh->polygons.dc, tag);
+	MeshMod_DataContainerTagEnsure(mesh->polygons.dc, tag.tag);
 }
 
-AL2O3_EXTERN_C bool MeshMod_PolygonTagExists(MeshMod_MeshHandle mhandle, MeshMod_Tag tag) {
+AL2O3_EXTERN_C bool MeshMod_MeshPolygonTagExists(MeshMod_MeshHandle mhandle, MeshMod_PolygonTag tag) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return false;
 	}
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
-	return MeshMod_DataContainerExists(mesh->polygons.dc, tag);
+	return MeshMod_DataContainerTagExists(mesh->polygons.dc, tag.tag);
 }
-AL2O3_EXTERN_C void MeshMod_MeshPolygonTagRemove(MeshMod_MeshHandle mhandle, MeshMod_Tag tag) {
+AL2O3_EXTERN_C void MeshMod_MeshPolygonTagRemove(MeshMod_MeshHandle mhandle, MeshMod_PolygonTag tag) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return;
 	}
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
-	MeshMod_DataContainerRemove(mesh->polygons.dc, tag);
+	MeshMod_DataContainerTagRemove(mesh->polygons.dc, tag.tag);
 }
-AL2O3_EXTERN_C uint64_t MeshMod_MeshPolygonTagComputeHash(MeshMod_MeshHandle mhandle, MeshMod_Tag tag) {
+AL2O3_EXTERN_C uint64_t MeshMod_MeshPolygonTagGetOrComputeHash(MeshMod_MeshHandle mhandle, MeshMod_PolygonTag tag) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return 0;
 	}
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
-	return MeshMod_DataContainerComputeHash(mesh->polygons.dc, tag);
+	return MeshMod_DataContainerTagGetOrComputeHash(mesh->polygons.dc, tag.tag);
 }
 
-AL2O3_EXTERN_C void* MeshMod_MeshPolygonTagHandleToPtr(MeshMod_MeshHandle mhandle, MeshMod_Tag tag, MeshMod_PolygonHandle handle) {
+AL2O3_EXTERN_C void* MeshMod_MeshPolygonTagHandleToPtr(MeshMod_MeshHandle mhandle, MeshMod_PolygonTag tag, MeshMod_PolygonHandle handle) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return NULL;
 	}
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
-	return MeshMod_DataContainerHandleToPtr(mesh->polygons.dc, tag, handle.handle);
+	return MeshMod_DataContainerTagHandleToPtr(mesh->polygons.dc, tag.tag, handle.handle);
 }
-
-AL2O3_EXTERN_C MeshMod_PolygonHandle MeshMod_MeshPolygonTagIterate(MeshMod_MeshHandle mhandle, MeshMod_Tag tag, MeshMod_PolygonHandle* previous) {
-	static MeshMod_PolygonHandle const invalid = {0 };
-
+AL2O3_EXTERN_C void MeshMod_MeshPolygonTagHandleToDefault(MeshMod_MeshHandle mhandle, MeshMod_PolygonTag tag, MeshMod_PolygonHandle handle) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
-		return invalid;
+		return;
 	}
-
-	MeshMod_Mesh* mesh = MeshMod_MeshHandleToPtr(mhandle);
-
-	if(previous == NULL) {
-		// start at the beginning valid handle
-		for (uint64_t i = 0u; i < MeshMod_DataContainerIndexCount(mesh->polygons.dc); ++i) {
-			Handle_Handle64 handle = MeshMod_DataContainerIndexToHandle(mesh->polygons.dc, i);
-			if(MeshMod_DataContainerIsValid(mesh->polygons.dc, handle)) {
-				if(!MeshMod_RegisteryIsDefaultData(mesh->registry, tag, MeshMod_DataContainerHandleToPtr(mesh->polygons.dc, tag, handle))) {
-					MeshMod_PolygonHandle phandle = {handle};
-					return phandle;
-				}
-			}
-		}
-		return invalid;
-	}
-
-	for (uint64_t i = (previous->handle.handle & Handle_MaxHandles64)+1 ; i < MeshMod_DataContainerIndexCount(mesh->polygons.dc); ++i) {
-		Handle_Handle64 handle = MeshMod_DataContainerIndexToHandle(mesh->polygons.dc, i);
-		if(MeshMod_DataContainerIsValid(mesh->polygons.dc, handle)) {
-			if(!MeshMod_RegisteryIsDefaultData(mesh->registry, tag, MeshMod_DataContainerHandleToPtr(mesh->polygons.dc, tag, handle))) {
-				MeshMod_PolygonHandle phandle = {handle};
-				return phandle;
-			}
-		}
-	}
-	return invalid;
+	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
+	MeshMod_DataContainerTagHandleToDefault(mesh->polygons.dc, tag.tag, handle.handle);
 }
+AL2O3_EXTERN_C MeshMod_PolygonHandle MeshMod_MeshPolygonTagIterate(MeshMod_MeshHandle mhandle, MeshMod_PolygonTag tag, MeshMod_PolygonHandle* previous) {
+	MeshMod_Mesh *mesh = MeshMod_MeshHandleToPtr(mhandle);
+	MeshMod_PolygonHandle handle = MeshMod_MeshPolygonIterate(mhandle, previous);
 
+	while (MeshMod_MeshPolygonIsValid(mhandle, handle)) {
+		if (!MeshMod_RegisteryIsDefaultData(mesh->registry, tag.tag, MeshMod_MeshPolygonTagHandleToPtr(mhandle, tag, handle))) {
+			return handle;
+		}
+		handle = MeshMod_MeshPolygonIterate(mhandle, &handle);
+	}
+	return handle;
+}

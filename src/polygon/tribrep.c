@@ -34,7 +34,7 @@ AL2O3_EXTERN_C void MeshMod_PolygonTriBRepAddToRegistry(MeshMod_RegistryHandle h
 	};
 
 	MeshMod_RegistryAddType(	handle,
-																	MeshMod_PolygonTriBRepTag,
+																	MeshMod_PolygonTriBRepTag.tag,
 																	sizeof(MeshMod_PolygonTriBRep),
 																	&CommonFunctionTable,
 																	&PolygonFunctionTable);

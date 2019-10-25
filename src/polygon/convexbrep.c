@@ -42,7 +42,7 @@ AL2O3_EXTERN_C void MeshMod_PolygonConvexBRepAddToRegistry(MeshMod_RegistryHandl
 	};
 
 	MeshMod_RegistryAddType(	handle,
-														MeshMod_PolygonConvexBRepTag,
+														MeshMod_PolygonConvexBRepTag.tag,
 														sizeof(MeshMod_PolygonConvexBRep),
 														&CommonFunctionTable,
 														&PolygonFunctionTable);

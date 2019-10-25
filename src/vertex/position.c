@@ -28,7 +28,7 @@ AL2O3_EXTERN_C void MeshMod_VertexPositionAddToRegistry(MeshMod_RegistryHandle h
 	};
 
 	MeshMod_RegistryAddType(handle,
-		MeshMod_VertexPositionTag,
+		MeshMod_VertexPositionTag.tag,
 		sizeof(MeshMod_VertexPosition),
 		&CommonFunctionTable,
 		&VertexFunctionTable);

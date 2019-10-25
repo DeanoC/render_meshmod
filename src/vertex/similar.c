@@ -41,7 +41,7 @@ AL2O3_EXTERN_C void MeshMod_VertexSimilarAddToRegistry(MeshMod_RegistryHandle ha
 	};
 
 	MeshMod_RegistryAddType(handle,
-		MeshMod_VertexSimilarTag,
+		MeshMod_VertexSimilarTag.tag,
 		sizeof(MeshMod_VertexSimilar),
 		&CommonFunctionTable,
 		&VertexFunctionTable);

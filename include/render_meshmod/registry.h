@@ -1,6 +1,4 @@
 #pragma once
-#ifndef GFX_MESHMOD_TAG_H
-#define GFX_MESHMOD_TAG_H
 
 #include "al2o3_platform/platform.h"
 #include "render_meshmod/meshmod.h"
@@ -58,5 +56,3 @@ AL2O3_EXTERN_C bool MeshMod_RegisteryIsDefaultData(MeshMod_RegistryHandle handle
 AL2O3_EXTERN_C MeshMod_RegistryCommonFunctionTable* MeshMod_RegistryGetCommonFunctionTable(MeshMod_RegistryHandle handle, MeshMod_Tag tag);
 
 AL2O3_EXTERN_C void* MeshMod_RegistryFunctionTable(MeshMod_RegistryHandle handle, MeshMod_Tag tag, MeshMod_Type type);
-
-#endif

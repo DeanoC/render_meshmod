@@ -16,31 +16,30 @@ typedef struct { struct MeshMod_DataContainer* dc; } MeshMod_VertexDataContainer
 typedef struct { struct MeshMod_DataContainer* dc; } MeshMod_EdgeDataContainerHandle;
 typedef struct { struct MeshMod_DataContainer* dc; } MeshMod_PolygonDataContainerHandle;
 
-// we reserve 4 bits of the user data for transitive etc.
+// we reserve 4 bits of the user data for transitive etc. so user data is 60 bit per tag
 #define MeshMod_DataContainerUserDataMask 0xF00000000000000ull
 #define MeshMod_DataContainerTransitiveFlag 0x800000000000000ull
 
 AL2O3_EXTERN_C MeshMod_DataContainer* MeshMod_DataContainerCreate(MeshMod_MeshHandle handle, MeshMod_Type type);
 AL2O3_EXTERN_C void MeshMod_DataContainerDestroy(MeshMod_DataContainer* dc);
+AL2O3_EXTERN_C void MeshMod_DataContainerMarkChanged(MeshMod_DataContainer* dc);
 
 AL2O3_EXTERN_C Handle_Handle64 MeshMod_DataContainerAlloc(MeshMod_DataContainer* dc);
 AL2O3_EXTERN_C void MeshMod_DataContainerRelease(MeshMod_DataContainer* dc, Handle_Handle64 handle);
-
-AL2O3_EXTERN_C void MeshMod_DataContainerEnsure(MeshMod_DataContainer* dc, MeshMod_Tag tag);
-AL2O3_EXTERN_C bool MeshMod_DataContainerExists(MeshMod_DataContainer* dc, MeshMod_Tag tag);
-AL2O3_EXTERN_C void MeshMod_DataContainerRemove(MeshMod_DataContainer* dc, MeshMod_Tag tag);
-
 AL2O3_EXTERN_C bool MeshMod_DataContainerIsValid(MeshMod_DataContainer* dc, Handle_Handle64 handle);
 AL2O3_EXTERN_C void MeshMod_DataContainerReplace(MeshMod_DataContainer* dc, Handle_Handle64 srcHandle, Handle_Handle64 dstHandle);
 AL2O3_EXTERN_C void MeshMod_DataContainerSwap(MeshMod_DataContainer* dc, Handle_Handle64 handle0, Handle_Handle64 handle1);
-AL2O3_EXTERN_C void* MeshMod_DataContainerHandleToPtr(MeshMod_DataContainer* dc, MeshMod_Tag tag, Handle_Handle64 handle);
-AL2O3_EXTERN_C void* MeshMod_DataContainerTagToPtr(MeshMod_DataContainer* dc, MeshMod_Tag tag);
-AL2O3_EXTERN_C void MeshMod_DataContainerMarkChanged(MeshMod_DataContainer* dc);
-AL2O3_EXTERN_C uint64_t MeshMod_DataContainerComputeHash(MeshMod_DataContainer* dc, MeshMod_Tag tag);
-// currently the lower 60 bits are useable. the other 4 have the Flags above
-AL2O3_EXTERN_C uint64_t MeshMod_DataContainerGetUserData(MeshMod_DataContainer* dc, MeshMod_Tag tag);
-AL2O3_EXTERN_C void MeshMod_DataContainerSetUserData(MeshMod_DataContainer* dc, MeshMod_Tag tag, uint64_t userData);
+
+AL2O3_EXTERN_C void MeshMod_DataContainerTagEnsure(MeshMod_DataContainer* dc, MeshMod_Tag tag);
+AL2O3_EXTERN_C bool MeshMod_DataContainerTagExists(MeshMod_DataContainer* dc, MeshMod_Tag tag);
+AL2O3_EXTERN_C void MeshMod_DataContainerTagRemove(MeshMod_DataContainer* dc, MeshMod_Tag tag);
+AL2O3_EXTERN_C uint64_t MeshMod_DataContainerTagGetUserData(MeshMod_DataContainer* dc, MeshMod_Tag tag);
+AL2O3_EXTERN_C uint64_t MeshMod_DataContainerTagGetOrComputeHash(MeshMod_DataContainer* dc, MeshMod_Tag tag);
+AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerTagToPtr(MeshMod_DataContainer* dc, MeshMod_Tag tag);
+AL2O3_EXTERN_C void MeshMod_DataContainerTagSetUserData(MeshMod_DataContainer* dc, MeshMod_Tag tag, uint64_t userData);
 AL2O3_EXTERN_C void MeshMod_DataContainerTagSetTransitive(MeshMod_DataContainer* dc, MeshMod_Tag tag, bool transitive);
+AL2O3_EXTERN_C void MeshMod_DataContainerTagHandleToDefault(MeshMod_DataContainer* dc, MeshMod_Tag tag, Handle_Handle64 handle);
+AL2O3_EXTERN_C void* MeshMod_DataContainerTagHandleToPtr(MeshMod_DataContainer* dc, MeshMod_Tag tag, Handle_Handle64 handle);
 
 // how many indices (alloc'ed or not)
 AL2O3_EXTERN_C uint64_t MeshMod_DataContainerIndexCount(MeshMod_DataContainer* dc);
