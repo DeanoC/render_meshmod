@@ -9,6 +9,8 @@
 
 AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshCreate(MeshMod_RegistryHandle registry, char const* name);
 AL2O3_EXTERN_C void MeshMod_MeshDestroy(MeshMod_MeshHandle handle);
+AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshClone(MeshMod_MeshHandle src);
+
 AL2O3_EXTERN_C MeshMod_RegistryHandle MeshMod_MeshGetRegistry(MeshMod_MeshHandle handle);
 AL2O3_EXTERN_C void MeshMod_MeshVertexDataHasChanged(MeshMod_MeshHandle mhandle);
 AL2O3_EXTERN_C void MeshMod_MeshEdgeDataHasChanged(MeshMod_MeshHandle mhandle);

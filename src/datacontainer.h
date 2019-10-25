@@ -22,6 +22,8 @@ typedef struct { struct MeshMod_DataContainer* dc; } MeshMod_PolygonDataContaine
 
 AL2O3_EXTERN_C MeshMod_DataContainer* MeshMod_DataContainerCreate(MeshMod_MeshHandle handle, MeshMod_Type type);
 AL2O3_EXTERN_C void MeshMod_DataContainerDestroy(MeshMod_DataContainer* dc);
+AL2O3_EXTERN_C MeshMod_DataContainer* MeshMod_DataContainerClone(MeshMod_DataContainer* dc, MeshMod_MeshHandle owner);
+
 AL2O3_EXTERN_C void MeshMod_DataContainerMarkChanged(MeshMod_DataContainer* dc);
 
 AL2O3_EXTERN_C Handle_Handle64 MeshMod_DataContainerAlloc(MeshMod_DataContainer* dc);

@@ -13,6 +13,7 @@
 AL2O3_EXTERN_C Handle_Manager32* g_MeshMod_MeshHandleManager;
 
 AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshCreate(MeshMod_RegistryHandle registry, char const* name) {
+	static MeshMod_MeshHandle const invalid = {0};
 	ASSERT(name);
 
 	bool ownsRegistry = false;
@@ -22,13 +23,15 @@ AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshCreate(MeshMod_RegistryHandle regi
 	}
 
 	MeshMod_MeshHandle handle = MeshMod_MeshHandleAlloc();
-	ASSERT(MeshMod_MeshHandleIsValid(handle));
+	if(!MeshMod_MeshHandleIsValid(handle)) {
+		MeshMod_MeshDestroy(handle);
+		return invalid;
+	}
 
 	MeshMod_Mesh* mesh = MeshMod_MeshHandleToPtr(handle);
 	mesh->name = MEMORY_MALLOC(strlen(name) + 1);
 	if(mesh->name == NULL) {
 		MeshMod_MeshDestroy(handle);
-		MeshMod_MeshHandle invalid = {0};
 		return invalid;
 	}
 
@@ -68,6 +71,41 @@ AL2O3_EXTERN_C void MeshMod_MeshDestroy(MeshMod_MeshHandle handle) {
 
 	MEMORY_FREE((void*)mesh->name);
 	MeshMod_MeshHandleRelease(handle);
+}
+AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshClone(MeshMod_MeshHandle handle) {
+	static MeshMod_MeshHandle const invalid = {0};
+
+	ASSERT(MeshMod_MeshHandleIsValid(handle));
+	MeshMod_Mesh* src = MeshMod_MeshHandleToPtr(handle);
+	MeshMod_MeshHandle newHandle = MeshMod_MeshHandleAlloc();
+	MeshMod_Mesh* dst = MeshMod_MeshHandleToPtr(newHandle);
+
+	dst->name = MEMORY_MALLOC(strlen(src->name) + 1);
+	if(!dst->name) {
+		MeshMod_MeshDestroy(newHandle);
+		return invalid;
+	}
+	strcpy((char*)dst->name, src->name);
+
+	if(dst->ownRegistry) {
+		dst->registry = MeshMod_RegistryClone(src->registry);
+		dst->ownRegistry = true;
+	}
+
+	dst->arbitaryDataKeys = CADT_VectorClone(src->arbitaryDataKeys);
+	for (size_t i = 0; i < CADT_VectorSize(src->arbitaryDataKeys); ++i) {
+		MeshMod_Tag tag = *(MeshMod_Tag*)CADT_VectorAt(src->arbitaryDataKeys, i);
+		CADT_DictU64Handle cloneDict = CADT_DictU64Clone((CADT_DictU64Handle)CADT_DictU64Get(src->arbitaryData, tag));
+		*(CADT_DictU64Handle*)CADT_VectorAt(dst->arbitaryDataKeys, i) = cloneDict;
+	}
+	dst->arbitaryDataSizes = CADT_DictU64Clone(src->arbitaryDataSizes);
+	dst->arbitaryData = CADT_DictU64Clone(src->arbitaryData);
+
+	dst->polygons.dc = MeshMod_DataContainerClone(src->polygons.dc, newHandle);
+	dst->edges.dc = MeshMod_DataContainerClone(src->edges.dc, newHandle);
+	dst->vertices.dc = MeshMod_DataContainerClone(src->vertices.dc, newHandle);
+
+	return newHandle;
 }
 
 AL2O3_EXTERN_C MeshMod_RegistryHandle MeshMod_MeshGetRegistry(MeshMod_MeshHandle handle) {

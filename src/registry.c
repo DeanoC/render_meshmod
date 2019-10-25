@@ -69,6 +69,18 @@ AL2O3_EXTERN_C void MeshMod_RegistryDestroy(MeshMod_RegistryHandle handle) {
 	CADT_VectorDestroy(reg->registry);
 	MeshMod_RegistryHandleRelease(handle);
 }
+AL2O3_EXTERN_C MeshMod_RegistryHandle MeshMod_RegistryClone(MeshMod_RegistryHandle handle) {
+	ASSERT(MeshMod_RegistryHandleIsValid(handle));
+	MeshMod_Registry* src = MeshMod_RegistryHandleToPtr(handle);
+
+	MeshMod_RegistryHandle newHandle = MeshMod_RegistryHandleAlloc();
+	MeshMod_Registry* dst = MeshMod_RegistryHandleToPtr(newHandle);
+
+	dst->tagDictionary = CADT_DictU64Clone(src->tagDictionary);
+	dst->registry = CADT_VectorClone(src->registry);
+
+	return newHandle;
+}
 
 AL2O3_EXTERN_C void MeshMod_RegistryAddType(	MeshMod_RegistryHandle handle,
 																							MeshMod_Tag tag,

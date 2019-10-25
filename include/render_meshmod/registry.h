@@ -35,8 +35,8 @@ typedef struct MeshMod_RegistryPolygonFunctionTable {
 
 AL2O3_EXTERN_C MeshMod_RegistryHandle MeshMod_RegistryCreate();
 AL2O3_EXTERN_C MeshMod_RegistryHandle MeshMod_RegistryCreateWithDefaults();
-
 AL2O3_EXTERN_C void MeshMod_RegistryDestroy(MeshMod_RegistryHandle handle);
+AL2O3_EXTERN_C MeshMod_RegistryHandle MeshMod_RegistryClone(MeshMod_RegistryHandle handle);
 
 AL2O3_EXTERN_C void MeshMod_RegistryAddType(
 	MeshMod_RegistryHandle handle,

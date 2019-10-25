@@ -241,6 +241,96 @@ TEST_CASE("Mesh triangle", "[MeshMod Mesh]") {
 	MeshMod_MeshDestroy(handle);
 }
 
+TEST_CASE("Mesh clone triangle", "[MeshMod Mesh]") {
+	MeshMod_MeshHandle handle = MeshMod_MeshCreate({0},"Test Mesh");
+	REQUIRE(MeshMod_MeshHandleIsValid(handle));
+
+	MeshMod_MeshVertexTagEnsure(handle, MeshMod_VertexPositionTag);
+	MeshMod_MeshEdgeTagEnsure(handle, MeshMod_EdgeHalfEdgeTag);
+	MeshMod_MeshPolygonTagEnsure(handle, MeshMod_PolygonTriBRepTag);
+
+	// 3 vertices, 3 edges, 1 triangle
+	MeshMod_VertexHandle vhandles[3];
+
+	vhandles[0] = MeshMod_MeshVertexAlloc(handle);
+	vhandles[1] = MeshMod_MeshVertexAlloc(handle);
+	vhandles[2] = MeshMod_MeshVertexAlloc(handle);
+	MeshMod_EdgeHandle ehandles[3];
+	ehandles[0] = MeshMod_MeshEdgeAlloc(handle);
+	ehandles[1] = MeshMod_MeshEdgeAlloc(handle);
+	ehandles[2] = MeshMod_MeshEdgeAlloc(handle);
+	MeshMod_PolygonHandle phandles[1];
+	phandles[0] = MeshMod_MeshPolygonAlloc(handle);
+
+	REQUIRE(MeshMod_MeshVertexIsValid(handle, vhandles[0]));
+	REQUIRE(MeshMod_MeshVertexIsValid(handle, vhandles[1]));
+	REQUIRE(MeshMod_MeshVertexIsValid(handle, vhandles[2]));
+	REQUIRE(MeshMod_MeshEdgeIsValid(handle, ehandles[0]));
+	REQUIRE(MeshMod_MeshEdgeIsValid(handle, ehandles[1]));
+	REQUIRE(MeshMod_MeshEdgeIsValid(handle, ehandles[2]));
+	REQUIRE(MeshMod_MeshPolygonIsValid(handle, phandles[0]));
+
+	auto pos0 = (MeshMod_VertexPosition*) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, vhandles[0]);
+	auto pos1 = (MeshMod_VertexPosition*) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, vhandles[1]);
+	auto pos2 = (MeshMod_VertexPosition*) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, vhandles[2]);
+	REQUIRE(pos0);
+	REQUIRE(pos1);
+	REQUIRE(pos2);
+	REQUIRE(Math_IsNanVec3F(*pos0));
+	REQUIRE(Math_IsNanVec3F(*pos1));
+	REQUIRE(Math_IsNanVec3F(*pos2));
+	*pos0 = {0, 0, 0};
+	*pos1 = {1, 0, 0};
+	*pos2 = {1, 1, 0};
+	auto edge0 = (MeshMod_EdgeHalfEdge*) MeshMod_MeshEdgeTagHandleToPtr(handle, MeshMod_EdgeHalfEdgeTag, ehandles[0]);
+	auto edge1 = (MeshMod_EdgeHalfEdge*) MeshMod_MeshEdgeTagHandleToPtr(handle, MeshMod_EdgeHalfEdgeTag, ehandles[1]);
+	auto edge2 = (MeshMod_EdgeHalfEdge*) MeshMod_MeshEdgeTagHandleToPtr(handle, MeshMod_EdgeHalfEdgeTag, ehandles[2]);
+	edge0->vertex = vhandles[0];
+	edge0->polygon = phandles[0];
+	edge1->vertex = vhandles[1];
+	edge1->polygon = phandles[0];
+	edge2->vertex = vhandles[2];
+	edge2->polygon = phandles[0];
+
+	auto polygon0 = (MeshMod_PolygonTriBRep*) MeshMod_MeshPolygonTagHandleToPtr(handle, MeshMod_PolygonTriBRepTag, phandles[0]);
+	polygon0->edge[0] = ehandles[0];
+	polygon0->edge[1] = ehandles[1];
+	polygon0->edge[2] = ehandles[2];
+
+	MeshMod_MeshHandle cloneHandle = MeshMod_MeshClone(handle);
+	MeshMod_MeshDestroy(handle);
+
+	MeshMod_PolygonHandle piterator = MeshMod_MeshPolygonIterate(cloneHandle, NULL);
+	uint64_t polyCount = 0;
+	while(MeshMod_MeshPolygonIsValid(cloneHandle, piterator)) {
+
+		auto poly = (MeshMod_PolygonTriBRep*) MeshMod_MeshPolygonTagHandleToPtr(cloneHandle, MeshMod_PolygonTriBRepTag, piterator);
+		REQUIRE(poly);
+		REQUIRE(poly->edge[0].handle.handle == ehandles[0].handle.handle);
+		REQUIRE(poly->edge[1].handle.handle == ehandles[1].handle.handle);
+		REQUIRE(poly->edge[2].handle.handle == ehandles[2].handle.handle);
+		polyCount++;
+		piterator = MeshMod_MeshPolygonIterate(cloneHandle, &piterator);
+	}
+	REQUIRE(polyCount == 1);
+
+	MeshMod_EdgeHandle eiterator = MeshMod_MeshEdgeIterate(cloneHandle, NULL);
+	uint64_t edgeCount = 0;
+	while(MeshMod_MeshEdgeIsValid(cloneHandle, eiterator)) {
+
+		auto edge = (MeshMod_EdgeHalfEdge*) MeshMod_MeshEdgeTagHandleToPtr(cloneHandle, MeshMod_EdgeHalfEdgeTag, eiterator);
+		REQUIRE(edge);
+		REQUIRE(edge->polygon.handle.handle == phandles[0].handle.handle);
+		REQUIRE(edge->vertex.handle.handle == vhandles[edgeCount].handle.handle);
+		edgeCount++;
+		eiterator = MeshMod_MeshEdgeIterate(cloneHandle, &eiterator);
+	}
+	REQUIRE(edgeCount == 3);
+
+	MeshMod_MeshDestroy(cloneHandle);
+}
+
+
 TEST_CASE("Mesh quad", "[MeshMod Mesh]") {
 	MeshMod_MeshHandle handle = MeshMod_MeshCreate({0},"Test Mesh");
 	REQUIRE(MeshMod_MeshHandleIsValid(handle));

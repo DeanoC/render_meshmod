@@ -49,6 +49,17 @@ AL2O3_EXTERN_C void MeshMod_DataContainerDestroy(MeshMod_DataContainer* dc) {
 	MEMORY_FREE(dc);
 }
 
+AL2O3_EXTERN_C MeshMod_DataContainer* MeshMod_DataContainerClone(MeshMod_DataContainer* src, MeshMod_MeshHandle owner) {
+	MeshMod_DataContainer* dst = MeshMod_DataContainerCreate(owner, src->containerType);
+
+	dst->vectorHashs = CADT_DictU64Clone(src->vectorHashs);
+	dst->userData = CADT_DictU64Clone(src->userData);
+	dst->handleManager = Handle_Manager64Clone(src->handleManager);
+	dst->bag = CADT_BagOfVectorsClone(src->bag);
+
+	return dst;
+}
+
 AL2O3_EXTERN_C Handle_Handle64 MeshMod_DataContainerAlloc(MeshMod_DataContainer* dc) {
 	static Handle_Handle64 const invalid = {0};
 	ASSERT(dc);
