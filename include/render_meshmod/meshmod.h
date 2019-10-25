@@ -23,9 +23,15 @@ typedef enum Mesh_SubType {
 
 #define MESHMOD_TAG(a, b, c, d, e, f) (MeshMod_Tag)( \
 		(uint64_t)(a) << 56 | (uint64_t)(b) << 40 | (uint64_t)(c) << 32 | (uint64_t)(d) << 24 | (uint64_t)(e) << 16 | (uint64_t)(f) << 8)
+#if __cplusplus
+#define MESHMOD_VERTEXTAG(b, c, d, e, f) { (MESHMOD_TAG(MeshMod_TypeVertex, b, c, d, e, f)) }
+#define MESHMOD_EDGETAG(b, c, d, e, f) { (MESHMOD_TAG(MeshMod_TypeEdge, b, c, d, e, f)) }
+#define MESHMOD_POLYGONTAG(b, c, d, e, f) { (MESHMOD_TAG(MeshMod_TypePolygon, b, c, d, e, f)) }
+#else
 #define MESHMOD_VERTEXTAG(b, c, d, e, f) (MeshMod_VertexTag){ (MESHMOD_TAG(MeshMod_TypeVertex, b, c, d, e, f)) }
 #define MESHMOD_EDGETAG(b, c, d, e, f) (MeshMod_EdgeTag){ (MESHMOD_TAG(MeshMod_TypeEdge, b, c, d, e, f)) }
 #define MESHMOD_POLYGONTAG(b, c, d, e, f) (MeshMod_PolygonTag){ (MESHMOD_TAG(MeshMod_TypePolygon, b, c, d, e, f)) }
+#endif
 
 #define MESHMOD_SUBTYPE_TAG(subtype) ((uint64_t)(subtype) << 48ull)
 AL2O3_FORCE_INLINE MeshMod_Tag MeshMod_VertexTagToHashTag(MeshMod_VertexTag vtag) {

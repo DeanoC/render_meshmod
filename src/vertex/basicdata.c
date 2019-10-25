@@ -83,7 +83,7 @@ AL2O3_EXTERN_C void MeshMod_Vertex##postfix##Interpolate2D(void const* va, void 
 	MeshMod_Vertex##postfix const* c = (MeshMod_Vertex##postfix const*)vc; \
 	MeshMod_Vertex##postfix* r = (MeshMod_Vertex##postfix*)vr; \
 	float const w = 1.0f - v - u; \
-	*r = (((float)*a) * w) + (((float)*b) * u) + (((float)*c) * v); \
+	*r = (type)((((float)*a) * w) + (((float)*b) * u) + (((float)*c) * v)); \
 }; \
 AL2O3_EXTERN_C void MeshMod_Vertex##postfix##AddToRegistry(MeshMod_RegistryHandle handle) { \
 	static MeshMod_RegistryCommonFunctionTable CommonFunctionTable = { \
