@@ -11,9 +11,9 @@ static char const* VertexSimilarDescription() {
 }
 
 static bool VertexSimilarEqual(void const* va, void const* vb, float const epsilon) {
-	
-	MeshMod_VertexSimilar const* a = (MeshMod_VertexSimilar const*)va; 
-	MeshMod_VertexSimilar const* b = (MeshMod_VertexSimilar const*)vb; 
+
+	MeshMod_VertexSimilar const* a = (MeshMod_VertexSimilar const*)va;
+	MeshMod_VertexSimilar const* b = (MeshMod_VertexSimilar const*)vb;
 	return a->handle.handle == b->handle.handle;
 }; 
 
@@ -22,9 +22,7 @@ static double VertexSimilarDistance(void const* va, void const* vb) {
 	MeshMod_VertexSimilar const* b = (MeshMod_VertexSimilar const*)vb;
 	return (double)a->handle.handle == (double)b->handle.handle;
 };
-static bool VertexSimilarIsTransitory() {
-	return true;
-}
+
 AL2O3_EXTERN_C void MeshMod_VertexSimilarAddToRegistry(MeshMod_RegistryHandle handle) {
 
 	static MeshMod_RegistryCommonFunctionTable CommonFunctionTable = {

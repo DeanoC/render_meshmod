@@ -21,4 +21,6 @@ void MeshMod_AddVertexDefaultsToTagRegistry(MeshMod_RegistryHandle handle) {
 	REGISTER_TYPE(Position);
 	REGISTER_TYPE(Normal);
 	REGISTER_TYPE(Uv);
+	REGISTER_TYPE(Ring);
+	REGISTER_TYPE(Similar);
 }

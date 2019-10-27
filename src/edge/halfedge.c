@@ -4,7 +4,7 @@
 #include "render_meshmod/registry.h"
 
 static void const* EdgeHalfEdgeDefaultData() {
-	static MeshMod_EdgeHalfEdge invalid = { {0}, {0} };
+	static MeshMod_EdgeHalfEdge invalid = { 0 };
 	return &invalid;
 }
 

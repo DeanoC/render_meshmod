@@ -1,6 +1,7 @@
 #include "render_meshmod/basicalgos.h"
 #include "render_meshmod/data/aabb.h"
 #include "render_meshmod/vertex/position.h"
+#include "render_meshmod/vertex/similar.h"
 #include "render_meshmod/edge/halfedge.h"
 #include "render_meshmod/polygon/tribrep.h"
 #include "render_meshmod/polygon/quadbrep.h"
@@ -336,4 +337,113 @@ AL2O3_EXTERN_C CADT_VectorHandle MeshMod_MeshPolygonTagSort(MeshMod_MeshHandle h
 	s_mesh.handle.handle = 0;
 
 	return output;
+}
+
+static int VertexPositionXYZSort(MeshMod_MeshHandle handle, MeshMod_VertexHandle ah, MeshMod_VertexHandle bh) {
+	MeshMod_VertexPosition const * a = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, ah);
+	MeshMod_VertexPosition const * b = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, bh);
+
+	int const xd = (int) (b->x * 10000.0f) - (a->x * 10000.0f);
+	int const yd = (int) (b->y * 10000.0f) - (a->y * 10000.0f);
+	int const zd = (int) (b->z * 10000.0f) - (a->z * 10000.0f);
+
+	if(xd == 0) {
+		if(yd == 0) {
+			return zd;
+		}
+		return yd;
+	}
+	return xd;
+}
+
+static int VertexPositionYXZSort(MeshMod_MeshHandle handle, MeshMod_VertexHandle ah, MeshMod_VertexHandle bh) {
+	MeshMod_VertexPosition const * a = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, ah);
+	MeshMod_VertexPosition const * b = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, bh);
+
+	int const xd = (int) (b->x * 10000.0f) - (a->x * 10000.0f);
+	int const yd = (int) (b->y * 10000.0f) - (a->y * 10000.0f);
+	int const zd = (int) (b->z * 10000.0f) - (a->z * 10000.0f);
+
+	if(yd == 0) {
+		if(xd == 0) {
+			return zd;
+		}
+		return xd;
+	}
+	return yd;
+}
+
+static int VertexPositionZXYSort(MeshMod_MeshHandle handle, MeshMod_VertexHandle ah, MeshMod_VertexHandle bh) {
+	MeshMod_VertexPosition const * a = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, ah);
+	MeshMod_VertexPosition const * b = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, bh);
+
+	int const xd = (int) (b->x * 10000.0f) - (a->x * 10000.0f);
+	int const yd = (int) (b->y * 10000.0f) - (a->y * 10000.0f);
+	int const zd = (int) (b->z * 10000.0f) - (a->z * 10000.0f);
+
+	if(zd == 0) {
+		if(xd == 0) {
+			return yd;
+		}
+		return xd;
+	}
+	return zd;
+}
+
+
+AL2O3_EXTERN_C void MeshMod_MeshComputeSimilarPositions(MeshMod_MeshHandle handle, float similarity) {
+
+	// first work out the longest axis, we will use that to sort along
+	MeshMod_DataAabb3F const *aabb = MeshMod_MeshComputeExtents3F(handle, MeshMod_VertexPositionTag);
+	size_t maxIndex = Math_HorizontalMaxIndex3F(Math_SubVec3F(aabb->aabb.maxExtent, aabb->aabb.minExtent));
+	CADT_VectorHandle sortedForEAndWhizz = NULL;
+	if (maxIndex == 0) {
+		sortedForEAndWhizz = MeshMod_MeshVertexTagSort(handle, MeshMod_VertexPositionTag, VertexPositionXYZSort);
+	} else if (maxIndex == 1) {
+		sortedForEAndWhizz = MeshMod_MeshVertexTagSort(handle, MeshMod_VertexPositionTag, VertexPositionYXZSort);
+	} else {
+		sortedForEAndWhizz = MeshMod_MeshVertexTagSort(handle, MeshMod_VertexPositionTag, VertexPositionZXYSort);
+	}
+
+	// remove existing similar position data and new
+	MeshMod_VertexTag const tag = MeshMod_AddUserDataToVertexTag(MeshMod_VertexSimilarTag, 'P');
+	MeshMod_MeshVertexTagRemove(handle, tag);
+	MeshMod_MeshVertexTagEnsure(handle, tag);
+
+	for (int i = 0; i < (int) CADT_VectorSize(sortedForEAndWhizz); ++i) {
+		MeshMod_VertexHandle vh = *(MeshMod_VertexHandle *) CADT_VectorAt(sortedForEAndWhizz, i);
+		MeshMod_VertexPosition const *start =
+				(MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, vh);
+		MeshMod_VertexHandle * t = (MeshMod_VertexHandle *) MeshMod_MeshVertexTagHandleToPtr(handle, tag, vh);
+		*t = vh; // start with self linked
+
+		// we know the list is in sorted order so we search backwards marking any within a fudged similarity to our
+		// similarity ring
+		int curI = i - 1;
+		while (curI > 0) {
+			MeshMod_VertexHandle ah = *(MeshMod_VertexHandle *) CADT_VectorAt(sortedForEAndWhizz, curI);
+			MeshMod_VertexPosition const
+					*a = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, ah);
+
+			// if we are this far away along the sorted axis we can't be similar
+			Math_Vec3F const axialdistance = Math_SubVec3F(*a, *start);
+			if (axialdistance.v[maxIndex] > similarity) {
+				break;
+			}
+
+			// check if we are similar by seeing if withing a sphere of similarity distance radius
+			float const distance = Math_LengthVec3F(axialdistance);
+			if(distance < similarity) {
+				// link current vertex into the ring
+				MeshMod_VertexHandle * l = (MeshMod_VertexHandle *) MeshMod_MeshVertexTagHandleToPtr(handle, tag, ah);
+				*t = *l;
+				*l = vh;
+				// no more iteration needed, as the vertex we just linked to has already search backwards and linked
+				break;
+			}
+			curI--;
+		}
+	}
+
+	CADT_VectorDestroy(sortedForEAndWhizz);
 }

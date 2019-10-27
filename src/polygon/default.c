@@ -22,4 +22,6 @@ void MeshMod_AddPolygonDefaultsToTagRegistry(MeshMod_RegistryHandle handle) {
 	REGISTER_TYPE(TriBRep)
 	REGISTER_TYPE(QuadBRep)
 	REGISTER_TYPE(ConvexBRep)
+	REGISTER_TYPE(Ring);
+
 }

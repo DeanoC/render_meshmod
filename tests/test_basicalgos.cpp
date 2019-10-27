@@ -3,6 +3,7 @@
 #include "render_meshmod/mesh.h"
 #include "render_meshmod/vertex/basicdata.h"
 #include "render_meshmod/vertex/position.h"
+#include "render_meshmod/vertex/similar.h"
 #include "render_meshmod/edge/halfedge.h"
 #include "render_meshmod/polygon/tribrep.h"
 #include "render_meshmod/polygon/quadbrep.h"
@@ -556,7 +557,7 @@ static int VertexPositionXSort(MeshMod_MeshHandle handle, MeshMod_VertexHandle a
 	int const xd = (int) (b->x * 10000.0f) - (a->x * 10000.0f);
 	int const yd = (int) (b->y * 10000.0f) - (a->y * 10000.0f);
 
-	if(xd == 0) {
+	if (xd == 0) {
 		return yd;
 	}
 	return xd;
@@ -618,5 +619,139 @@ TEST_CASE("Mesh sort vertex", "[MeshMod BasicAlgos]") {
 			default: break;
 		}
 	}
+	MeshMod_MeshDestroy(handle);
+}
+
+TEST_CASE("Mesh similar position compute", "[MeshMod BasicAlgos]") {
+	MeshMod_MeshHandle handle = MeshMod_MeshCreate({0}, "Tri and Quad");
+
+//	*pos0 = {0, 0, 0};
+//	*pos1 = {1, 0, 0};
+//	*pos2 = {1, 1, 0};
+//	*pos3 = {2, 0, 0};
+//	*pos4 = {3, 0, 0};
+//	*pos5 = {3, 1, 0};
+//	*pos6 = {2, 1, 0};
+	AddTriAndQuadToMesh(handle);
+	MeshMod_VertexHandle new7 = MeshMod_MeshVertexAlloc(handle);
+	MeshMod_VertexHandle new8 = MeshMod_MeshVertexAlloc(handle);
+	MeshMod_VertexHandle new9 = MeshMod_MeshVertexAlloc(handle);
+	MeshMod_VertexHandle new10 = MeshMod_MeshVertexAlloc(handle);
+	auto pos7 =
+			(MeshMod_VertexPosition *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, new7);
+	auto pos8 =
+			(MeshMod_VertexPosition*) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, new8);
+	auto pos9 =
+			(MeshMod_VertexPosition*) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, new9);
+	auto pos10 =
+			(MeshMod_VertexPosition*) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, new10);
+	*pos7 = { 0, 0, 0 };
+	*pos8 = { 2.001f, 1, 0 };
+	*pos9 = { 2.01f, 1, 2 };
+	*pos10 = { 2.01f, 1.01f, 0 };
+
+	MeshMod_MeshComputeSimilarPositions(handle, 0.1f);
+
+	MeshMod_VertexTag const tag = MeshMod_AddUserDataToVertexTag(MeshMod_VertexSimilarTag, 'P');
+
+	MeshMod_VertexHandle viterator = MeshMod_MeshVertexTagIterate(handle, MeshMod_VertexPositionTag, NULL);
+	size_t vertexCount = 0;
+	MeshMod_VertexHandle handle0 = {0};
+	MeshMod_VertexHandle handle6 = {0};
+	while (MeshMod_MeshVertexIsValid(handle, viterator)) {
+
+		auto v =
+				(MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, viterator);
+		auto s =
+				(MeshMod_VertexSimilar const *) MeshMod_MeshVertexTagHandleToPtr(handle, tag, viterator);
+
+		switch (vertexCount) {
+			case 0: {
+				REQUIRE(v->x == Approx(0.0f));
+				REQUIRE(v->y == Approx(0.0f));
+				REQUIRE(v->z == Approx(0.0f));
+				REQUIRE(s->handle.handle != viterator.handle.handle);
+				handle0 = viterator;
+				REQUIRE(s->handle.handle == new7.handle.handle);
+				break;
+			}
+			case 1: {
+				REQUIRE(v->x == Approx(1.0f));
+				REQUIRE(v->y == Approx(0.0f));
+				REQUIRE(v->z == Approx(0.0f));
+				REQUIRE(s->handle.handle == viterator.handle.handle);
+				break;
+			}
+			case 2: {
+				REQUIRE(v->x == Approx(1.0f));
+				REQUIRE(v->y == Approx(1.0f));
+				REQUIRE(v->z == Approx(0.0f));
+				REQUIRE(s->handle.handle == viterator.handle.handle);
+				break;
+			}
+			case 3: {
+				REQUIRE(v->x == Approx(2.0f));
+				REQUIRE(v->y == Approx(0.0f));
+				REQUIRE(v->z == Approx(0.0f));
+				REQUIRE(s->handle.handle == viterator.handle.handle);
+				break;
+			}
+			case 4: {
+				REQUIRE(v->x == Approx(3.0f));
+				REQUIRE(v->y == Approx(0.0f));
+				REQUIRE(v->z == Approx(0.0f));
+				REQUIRE(s->handle.handle == viterator.handle.handle);
+				break;
+			}
+			case 5: {
+				REQUIRE(v->x == Approx(3.0f));
+				REQUIRE(v->y == Approx(1.0f));
+				REQUIRE(v->z == Approx(0.0f));
+				REQUIRE(s->handle.handle == viterator.handle.handle);
+				break;
+			}
+			case 6: {
+				REQUIRE(v->x == Approx(2.0f));
+				REQUIRE(v->y == Approx(1.0f));
+				REQUIRE(v->z == Approx(0.0f));
+				REQUIRE(s->handle.handle == new10.handle.handle);
+				handle6 = viterator;
+				break;
+			}
+			case 7: {
+				REQUIRE(v->x == Approx(0.0f));
+				REQUIRE(v->y == Approx(0.0f));
+				REQUIRE(v->z == Approx(0.0f));
+				REQUIRE(s->handle.handle == handle0.handle.handle);
+				break;
+			}
+			case 8: {
+				REQUIRE(v->x == Approx(2.001f));
+				REQUIRE(v->y == Approx(1.0f));
+				REQUIRE(v->z == Approx(0.0f));
+				REQUIRE(s->handle.handle == handle6.handle.handle);
+				break;
+			}
+			case 9: {
+				REQUIRE(v->x == Approx(2.01f));
+				REQUIRE(v->y == Approx(1.0f));
+				REQUIRE(v->z == Approx(2.0f));
+				REQUIRE(s->handle.handle == viterator.handle.handle);
+				break;
+			}
+			case 10: {
+				REQUIRE(v->x == Approx(2.01f));
+				REQUIRE(v->y == Approx(1.01f));
+				REQUIRE(v->z == Approx(0.0f));
+				REQUIRE(s->handle.handle == new8.handle.handle);
+				break;
+			}
+
+			default: break;
+		}
+		vertexCount++;
+		viterator = MeshMod_MeshVertexTagIterate(handle, MeshMod_VertexPositionTag, &viterator);
+	}
+
 	MeshMod_MeshDestroy(handle);
 }
