@@ -5,6 +5,7 @@
 #include "render_meshmod/polygon/tribrep.h"
 #include "render_meshmod/polygon/quadbrep.h"
 #include "render_meshmod/polygon/convexbrep.h"
+#include "mesh.h"
 
 AL2O3_EXTERN_C MeshMod_DataAabb3F const *MeshMod_MeshComputeExtents3F(MeshMod_MeshHandle handle, MeshMod_VertexTag tag) {
 
@@ -237,4 +238,102 @@ AL2O3_EXTERN_C void MeshMod_MeshTrianglate(MeshMod_MeshHandle handle) {
 
 	}
 	MeshMod_MeshPolygonDataHasChanged(handle);
+}
+
+static MeshMod_MeshHandle s_mesh;
+static MeshMod_VertexSortFunc s_vertexSort;
+static MeshMod_EdgeSortFunc s_edgeSort;
+static MeshMod_PolygonSortFunc s_polygonSort;
+
+static int VertexHandleAdaptor(MeshMod_VertexHandle a, MeshMod_VertexHandle b) {
+	return s_vertexSort(s_mesh, a, b);
+}
+
+static int EdgeHandleAdaptor(MeshMod_EdgeHandle a, MeshMod_EdgeHandle b) {
+	return s_edgeSort(s_mesh, a, b);
+}
+
+static int PolygonHandleAdaptor(MeshMod_PolygonHandle a, MeshMod_PolygonHandle b) {
+	return s_polygonSort(s_mesh, a, b);
+}
+
+#define SORT_NAME MeshMod_VertexHandleTagSort
+#define SORT_TYPE MeshMod_VertexHandle
+#define SORT_CMP(x, y) VertexHandleAdaptor(x, y)
+#include "sort.h"
+
+AL2O3_EXTERN_C CADT_VectorHandle MeshMod_MeshVertexTagSort(MeshMod_MeshHandle handle, MeshMod_VertexTag tag, MeshMod_VertexSortFunc sortFunc) {
+	CADT_VectorHandle output = CADT_VectorCreate(sizeof(MeshMod_VertexHandle));
+	if(!output) {
+		return NULL;
+	}
+	ASSERT(!MeshMod_MeshHandleIsValid(s_mesh));
+	s_mesh = handle;
+	s_vertexSort = sortFunc;
+
+	// gather all the valid handles for this tag
+	MeshMod_VertexHandle viterator = MeshMod_MeshVertexTagIterate(handle, tag, NULL);
+	while(MeshMod_MeshVertexIsValid(handle, viterator))	{
+		CADT_VectorPushElement(output, &viterator);
+		viterator = MeshMod_MeshVertexTagIterate(handle, tag, &viterator);
+	}
+
+	MeshMod_VertexHandleTagSort_quick_sort(CADT_VectorData(output), CADT_VectorSize(output));
+	s_mesh.handle.handle = 0;
+	return output;
+}
+
+#define SORT_NAME MeshMod_EdgeHandleTagSort
+#define SORT_TYPE MeshMod_EdgeHandle
+#define SORT_CMP(x, y) EdgeHandleAdaptor(x, y)
+#include "sort.h"
+
+AL2O3_EXTERN_C CADT_VectorHandle MeshMod_MeshEdgeTagSort(MeshMod_MeshHandle handle, MeshMod_EdgeTag tag, MeshMod_EdgeSortFunc sortFunc) {
+	CADT_VectorHandle output = CADT_VectorCreate(sizeof(MeshMod_EdgeHandle));
+	if(!output) {
+		return NULL;
+	}
+
+	ASSERT(!MeshMod_MeshHandleIsValid(s_mesh));
+	s_mesh = handle;
+	s_edgeSort = sortFunc;
+
+	// gather all the valid handles for this tag
+	MeshMod_EdgeHandle eiterator = MeshMod_MeshEdgeTagIterate(handle, tag, NULL);
+	while(MeshMod_MeshEdgeIsValid(handle, eiterator))	{
+		CADT_VectorPushElement(output, &eiterator);
+		eiterator = MeshMod_MeshEdgeTagIterate(handle, tag, &eiterator);
+	}
+
+	MeshMod_EdgeHandleTagSort_quick_sort(CADT_VectorData(output), CADT_VectorSize(output));
+	s_mesh.handle.handle = 0;
+
+	return output;
+}
+
+#define SORT_NAME MeshMod_PolygonHandleTagSort
+#define SORT_TYPE MeshMod_PolygonHandle
+#define SORT_CMP(x, y) PolygonHandleAdaptor(x, y)
+#include "sort.h"
+
+AL2O3_EXTERN_C CADT_VectorHandle MeshMod_MeshPolygonTagSort(MeshMod_MeshHandle handle, MeshMod_PolygonTag tag, MeshMod_PolygonSortFunc sortFunc) {
+	CADT_VectorHandle output = CADT_VectorCreate(sizeof(MeshMod_PolygonHandle));
+	if(!output) {
+		return NULL;
+	}
+	ASSERT(!MeshMod_MeshHandleIsValid(s_mesh));
+	s_mesh = handle;
+	s_polygonSort = sortFunc;
+
+	// gather all the valid handles for this tag
+	MeshMod_PolygonHandle piterator = MeshMod_MeshPolygonTagIterate(handle, tag, NULL);
+	while(MeshMod_MeshPolygonIsValid(handle, piterator))	{
+		CADT_VectorPushElement(output, &piterator);
+		piterator = MeshMod_MeshPolygonTagIterate(handle, tag, &piterator);
+	}
+
+	MeshMod_PolygonHandleTagSort_quick_sort(CADT_VectorData(output), CADT_VectorSize(output));
+	s_mesh.handle.handle = 0;
+
+	return output;
 }

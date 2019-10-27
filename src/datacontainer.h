@@ -1,6 +1,8 @@
 #pragma once
 
 #include "al2o3_cadt/bagofvectors.h"
+#include "al2o3_cadt/dict.h"
+
 typedef struct MeshMod_DataContainer {
 	MeshMod_Type containerType;
 
