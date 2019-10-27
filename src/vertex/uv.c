@@ -3,7 +3,7 @@
 #include "render_meshmod/vertex/uv.h"
 #include "render_meshmod/registry.h"
 
-static void* VertexUvDefaultData() {
+static void const* VertexUvDefaultData() {
 	static Math_Vec2F nan = { NAN, NAN };
 	return &nan;
 }
@@ -15,13 +15,11 @@ static char const* VertexUvDescription() {
 AL2O3_EXTERN_C void MeshMod_VertexUvAddToRegistry(MeshMod_RegistryHandle handle) {
 
 	static MeshMod_RegistryCommonFunctionTable CommonFunctionTable = {
-		&VertexUvDefaultData,
-		&MeshMod_VertexVec2FEqual,
-		NULL,
-		&VertexUvDescription,
-		NULL,
-		& MeshMod_VertexVec2FDistance,
-
+		.defaultDataFunc = &VertexUvDefaultData,
+		.equalFunc = &MeshMod_VertexVec2FEqual,
+		.destroyFunc = NULL,
+		.descriptionFunc = &VertexUvDescription,
+		.distanceFunc = &MeshMod_VertexVec2FDistance,
 	};
 
 	static MeshMod_RegistryVertexFunctionTable VertexFunctionTable = {
@@ -30,7 +28,7 @@ AL2O3_EXTERN_C void MeshMod_VertexUvAddToRegistry(MeshMod_RegistryHandle handle)
 	};
 
 	MeshMod_RegistryAddType(handle,
-		MeshMod_VertexUvTag,
+		MeshMod_VertexUvTag.tag,
 		sizeof(MeshMod_VertexUv),
 		&CommonFunctionTable,
 		&VertexFunctionTable);

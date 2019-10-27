@@ -3,270 +3,308 @@
 #include "al2o3_cadt/bagofvectors.h"
 #include "al2o3_cadt/vector.h"
 #include "al2o3_cadt/dict.h"
-#include "render_meshmod/datacontainer.h"
 #include "render_meshmod/mesh.h"
 
 #include "al2o3_lz4/lz4.h"
+#include "datacontainer.h"
 
-typedef struct MeshMod_DataContainer {
-	MeshMod_Type containerType;
-	CADT_BagOfVectorsHandle bag;
-	CADT_VectorHandle validVector; // TODO repalce with packed bit vector
-	CADT_DictU64Handle vectorHashs;
+AL2O3_EXTERN_C MeshMod_DataContainer* MeshMod_DataContainerCreate(MeshMod_MeshHandle handle, MeshMod_Type type) {
 
-	size_t elementCount;
-	struct MeshMod_Mesh* owner;
-} MeshMod_DataContainer;
-
-AL2O3_EXTERN_C MeshMod_DataContainerHandle MeshMod_DataContainerCreate(struct MeshMod_Mesh* mesh, MeshMod_Type type) {
-
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)MEMORY_MALLOC(sizeof(MeshMod_DataContainer));
+	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)MEMORY_CALLOC(1, sizeof(MeshMod_DataContainer));
 	if (dc == NULL) return NULL;
 
 	dc->bag = CADT_BagOfVectorsCreate();
-	if (dc->bag == NULL) { goto failexit; }
-
-	dc->owner = mesh;
+	if (dc->bag == NULL) {
+		MeshMod_DataContainerDestroy(dc);
+		return NULL;
+	}
+	dc->owner = handle;
 	dc->containerType = type;
-	dc->elementCount = 0;
-	dc->validVector = CADT_VectorCreate(sizeof(uint8_t));
-	if (dc->validVector == NULL) { goto failexit; }
 	dc->vectorHashs = CADT_DictU64Create();
-	if (dc->vectorHashs == NULL) { goto failexit; }
-
-	return dc;
-
-failexit:
-	if (dc && dc->vectorHashs != NULL) {
-		CADT_DictU64Destroy(dc->vectorHashs);
+	if (dc->vectorHashs == NULL) {
+		MeshMod_DataContainerDestroy(dc);
+		return NULL;
 	}
-	if (dc && dc->validVector != NULL) {
-		CADT_VectorDestroy(dc->validVector);
-	}
-	if (dc && dc->bag != NULL) {
-		CADT_BagOfVectorsDestroy(dc->bag);
-	}
-	if (dc) {
-		MEMORY_FREE(dc);
-	}
-
-	return NULL;
-}
-
-AL2O3_EXTERN_C void MeshMod_DataContainerDestroy(MeshMod_DataContainerHandle handle) {
-	ASSERT(handle);
-
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
-	CADT_VectorDestroy(dc->validVector);
-	CADT_BagOfVectorsDestroy(dc->bag);
-}
-
-AL2O3_EXTERN_C MeshMod_DataContainerHandle MeshMod_DataContainerClone(MeshMod_DataContainerHandle handle, struct MeshMod_Mesh* newMesh) {
-	ASSERT(handle);
-
-	MeshMod_DataContainer* odc = (MeshMod_DataContainer*)handle;
-	MeshMod_DataContainer* ndc = (MeshMod_DataContainer*)MEMORY_MALLOC(sizeof(MeshMod_DataContainer));
-	if (ndc == NULL) return NULL;
-
-	ndc->bag = CADT_BagOfVectorsClone(odc->bag);
-	ndc->owner = newMesh;
-	ndc->containerType = odc->containerType;
-	ndc->elementCount = odc->elementCount;
-	ndc->validVector = CADT_VectorClone(odc->validVector);
-	ndc->vectorHashs = CADT_DictU64Clone(odc->vectorHashs);
-
-	return ndc;
-
-}
-
-AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerAdd(MeshMod_DataContainerHandle handle, MeshMod_Tag tag) {
-	ASSERT(handle);
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
-	if ((uint8_t)(tag >> 56) != dc->containerType) {
+	dc->userData = CADT_DictU64Create();
+	if (dc->userData == NULL) {
+		MeshMod_DataContainerDestroy(dc);
 		return NULL;
 	}
 
-	MeshMod_RegistryHandle registry = MeshMod_MeshGetRegistry(dc->owner);
-	ASSERT(MeshMod_RegistryExists(registry, tag));
-	size_t const elementSize = MeshMod_RegistryElementSize(registry, tag);
-	CADT_VectorHandle data = CADT_BagOfVectorsAdd(dc->bag, tag, elementSize);
-	CADT_DictU64Add(dc->vectorHashs, tag, 0);
-
-	return data;
+	dc->handleManager = Handle_Manager64Create(sizeof(uint64_t), 1024 * 1024, 1024, true);
+	if(dc->handleManager == NULL) {
+		MeshMod_DataContainerDestroy(dc);
+		return NULL;
+	}
+	return dc;
 }
-AL2O3_EXTERN_C bool MeshMod_DataContainerExists(MeshMod_DataContainerHandle handle, MeshMod_Tag tag) {
-	ASSERT(handle);
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
+
+AL2O3_EXTERN_C void MeshMod_DataContainerDestroy(MeshMod_DataContainer* dc) {
+	ASSERT(dc);
+
+	CADT_DictU64Destroy(dc->vectorHashs);
+	CADT_DictU64Destroy(dc->userData);
+	Handle_Manager64Destroy(dc->handleManager);
+	CADT_BagOfVectorsDestroy(dc->bag);
+	MEMORY_FREE(dc);
+}
+
+AL2O3_EXTERN_C MeshMod_DataContainer* MeshMod_DataContainerClone(MeshMod_DataContainer* src, MeshMod_MeshHandle owner) {
+	MeshMod_DataContainer* dst = MeshMod_DataContainerCreate(owner, src->containerType);
+
+	dst->vectorHashs = CADT_DictU64Clone(src->vectorHashs);
+	dst->userData = CADT_DictU64Clone(src->userData);
+	dst->handleManager = Handle_Manager64Clone(src->handleManager);
+	dst->bag = CADT_BagOfVectorsClone(src->bag);
+
+	return dst;
+}
+
+AL2O3_EXTERN_C Handle_Handle64 MeshMod_DataContainerAlloc(MeshMod_DataContainer* dc) {
+	static Handle_Handle64 const invalid = {0};
+	ASSERT(dc);
+	if(CADT_BagOfVectorsSize(dc->bag) == 0) {
+		return invalid;
+	}
+
+	MeshMod_RegistryHandle registry = MeshMod_MeshGetRegistry(dc->owner);
+	size_t index = 0;
+
+	for (size_t i = 0; i < CADT_BagOfVectorsSize(dc->bag); ++i) {
+		CADT_VectorHandle vh = CADT_BagOfVectorsAt(dc->bag, i);
+
+		MeshMod_Tag tag = CADT_BagOfVectorsGetKey(dc->bag, i);
+		CADT_DictU64Replace(dc->vectorHashs, tag, 0);
+		CADT_DictU64Replace(dc->userData, tag, 0);
+
+		void const* defaultData = MeshMod_RegistryDefaultData(registry, tag);
+		size_t localIndex  = CADT_VectorPushElement(vh, defaultData);
+		if(i == 0) {
+			index = localIndex;
+		} else {
+			ASSERT(index == localIndex);
+		}
+	}
+
+	Handle_Handle64 handle = Handle_Manager64Alloc(dc->handleManager);
+	ASSERT(Handle_Manager64IsValid(dc->handleManager, handle));
+	*((uint64_t*)Handle_Manager64HandleToPtr(dc->handleManager, handle)) = index;
+
+	return handle;
+}
+AL2O3_EXTERN_C void MeshMod_DataContainerRelease(MeshMod_DataContainer* dc, Handle_Handle64 handle) {
+	ASSERT(dc);
+	Handle_Manager64Release(dc->handleManager, handle);
+}
+
+AL2O3_EXTERN_C void MeshMod_DataContainerTagEnsure(MeshMod_DataContainer* dc, MeshMod_Tag tag) {
+	ASSERT(dc);
 	if ((uint8_t)(tag >> 56) != dc->containerType) {
+		LOGERROR("MeshMod_DataContainerExists was passed invalid tag for this container type");
+		return;
+	}
+
+	size_t count = 0;
+	if(CADT_BagOfVectorsSize(dc->bag) > 0) {
+		count = CADT_VectorSize(CADT_BagOfVectorsAt(dc->bag, 0));
+	}
+
+	// if the tag vector doesn't exist create it
+	MeshMod_RegistryHandle registry = MeshMod_MeshGetRegistry(dc->owner);
+	if(!MeshMod_DataContainerTagExists(dc, tag)) {
+		size_t const elementSize = MeshMod_RegistryElementSize(registry, tag);
+		CADT_VectorHandle data = CADT_BagOfVectorsAdd(dc->bag, tag, elementSize);
+		CADT_VectorResizeWithDefault(data, count, MeshMod_RegistryDefaultData(registry, tag));
+		CADT_DictU64Add(dc->vectorHashs, tag, 0);
+	}
+}
+
+AL2O3_EXTERN_C bool MeshMod_DataContainerTagExists(MeshMod_DataContainer* dc, MeshMod_Tag tag) {
+	ASSERT(dc);
+	if ((uint8_t)(tag >> 56) != dc->containerType) {
+		LOGWARNING("Passed invalid tag for this container type");
 		return false;
 	}
 
 	return CADT_BagOfVectorsKeyExists(dc->bag, tag);
 }
 
-
-AL2O3_EXTERN_C size_t MeshMod_DataContainerSize(MeshMod_DataContainerHandle handle) {
-	ASSERT(handle);
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
-	return dc->elementCount;
-}
-
-AL2O3_EXTERN_C void MeshMod_DataContainerResize(MeshMod_DataContainerHandle handle, size_t size) {
-	ASSERT(handle);
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
-	MeshMod_RegistryHandle registry = MeshMod_MeshGetRegistry(dc->owner);
-
-	for (size_t i = 0; i < CADT_BagOfVectorsSize(dc->bag); ++i) {
-		CADT_VectorHandle vh = CADT_BagOfVectorsAt(dc->bag, i);
-		MeshMod_Tag tag = CADT_BagOfVectorsGetKey(dc->bag, i);
-		void const* defaultData = MeshMod_RegistryDefaultData(registry, tag);
-		CADT_VectorResizeWithDefault(vh, size, defaultData);
-		CADT_DictU64Replace(dc->vectorHashs, tag, 0);
+AL2O3_EXTERN_C void MeshMod_DataContainerTagRemove(MeshMod_DataContainer* dc, MeshMod_Tag tag) {
+	ASSERT(dc);
+	if ((uint8_t)(tag >> 56) != dc->containerType) {
+		LOGWARNING("Passed invalid tag for this container type");
+		return;
 	}
-	uint8_t def = 1;
-	CADT_VectorResizeWithDefault(dc->validVector, size, &def);
-	dc->elementCount = size;
-}
 
-
-AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerMutableLookup(MeshMod_DataContainerHandle handle, MeshMod_Tag tag) {
-	ASSERT(handle);
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
-	CADT_DictU64Replace(dc->vectorHashs, tag, 0); // reset hash as we are mutating the data
-	return CADT_BagOfVectorsLookup(dc->bag, tag);
-}
-
-AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerConstLookup(MeshMod_DataContainerHandle handle, MeshMod_Tag tag) {
-	ASSERT(handle);
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
-	return CADT_BagOfVectorsLookup(dc->bag, tag);
-}
-
-AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerAddOrMutate(MeshMod_DataContainerHandle handle, MeshMod_Tag tag) {
-	if (MeshMod_DataContainerExists(handle, tag)) {
-		return MeshMod_DataContainerMutableLookup(handle, tag);
+	if(!CADT_BagOfVectorsKeyExists(dc->bag, tag)) {
+		return;
 	}
-	else {
-		return MeshMod_DataContainerAdd(handle, tag);
-	}
+
+	CADT_BagOfVectorsRemove(dc->bag, tag);
+	CADT_DictU64Remove(dc->vectorHashs, tag);
+	CADT_DictU64Remove(dc->userData, tag);
 }
 
-AL2O3_EXTERN_C bool MeshMod_DataContainerIsValid(MeshMod_DataContainerHandle handle, size_t index) {
-	ASSERT(handle);
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
-	ASSERT(index < dc->elementCount);
-	return *((uint8_t*)CADT_VectorAt(dc->validVector, index)) > 0;
+
+AL2O3_EXTERN_C bool MeshMod_DataContainerIsValid(MeshMod_DataContainer* dc, Handle_Handle64 handle) {
+	ASSERT(dc);
+	return Handle_Manager64IsValid(dc->handleManager, handle);
 }
 
-AL2O3_EXTERN_C void MeshMod_DataContainerMarkInvalid(MeshMod_DataContainerHandle handle, size_t index) {
-	ASSERT(handle);
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
-	ASSERT(index < dc->elementCount);
-	*((uint8_t*)CADT_VectorAt(dc->validVector, index)) = 0;
-}
+AL2O3_EXTERN_C void MeshMod_DataContainerReplace(MeshMod_DataContainer* dc, Handle_Handle64 srcHandle, Handle_Handle64 dstHandle) {
+	ASSERT(dc);
+	ASSERT(MeshMod_DataContainerIsValid(dc, srcHandle));
+	ASSERT(MeshMod_DataContainerIsValid(dc, dstHandle));
 
-AL2O3_EXTERN_C void MeshMod_DataContainerReplace(MeshMod_DataContainerHandle handle, size_t srcIndex, size_t dstIndex) {
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
+	uint64_t srcIndex = *((uint64_t*)Handle_Manager64HandleToPtr(dc->handleManager, srcHandle));
+	uint64_t dstIndex = *((uint64_t*)Handle_Manager64HandleToPtr(dc->handleManager, dstHandle));
+
 	for (size_t i = 0; i < CADT_BagOfVectorsSize(dc->bag); ++i) {
 		CADT_VectorHandle vh = CADT_BagOfVectorsAt(dc->bag, i);
 		MeshMod_Tag tag = CADT_BagOfVectorsGetKey(dc->bag, i);
 		CADT_VectorReplace(vh, srcIndex, dstIndex);
 		CADT_DictU64Replace(dc->vectorHashs, tag, 0);
 	}
-	CADT_VectorReplace(dc->validVector, srcIndex, dstIndex);
 }
+AL2O3_EXTERN_C void MeshMod_DataContainerSwap(MeshMod_DataContainer* dc, Handle_Handle64 handle0, Handle_Handle64 handle1) {
+	ASSERT(dc);
+	ASSERT(MeshMod_DataContainerIsValid(dc, handle0));
+	ASSERT(MeshMod_DataContainerIsValid(dc, handle1));
 
-AL2O3_EXTERN_C void MeshMod_DataContainerSwap(MeshMod_DataContainerHandle handle, size_t index0, size_t index1) {
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
+	uint64_t index0 = *((uint64_t*)Handle_Manager64HandleToPtr(dc->handleManager, handle0));
+	uint64_t index1 = *((uint64_t*)Handle_Manager64HandleToPtr(dc->handleManager, handle1));
+
 	for (size_t i = 0; i < CADT_BagOfVectorsSize(dc->bag); ++i) {
 		CADT_VectorHandle vh = CADT_BagOfVectorsAt(dc->bag, i);
 		MeshMod_Tag tag = CADT_BagOfVectorsGetKey(dc->bag, i);
 		CADT_VectorSwap(vh, index0, index1);
 		CADT_DictU64Replace(dc->vectorHashs, tag, 0);
 	}
-	CADT_VectorSwap(dc->validVector, index0, index1);
 }
 
-AL2O3_EXTERN_C void MeshMod_DataContainerRemove(MeshMod_DataContainerHandle handle, size_t index) {
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
+AL2O3_EXTERN_C void* MeshMod_DataContainerTagHandleToPtr(MeshMod_DataContainer* dc, MeshMod_Tag tag, Handle_Handle64 handle) {
+	ASSERT(dc);
+	ASSERT(MeshMod_DataContainerIsValid(dc, handle));
+
+	uint64_t index = *((uint64_t*)Handle_Manager64HandleToPtr(dc->handleManager, handle));
+
+	CADT_VectorHandle vh = CADT_BagOfVectorsLookup(dc->bag, tag);
+	ASSERT(index < CADT_VectorSize(vh));
+	return CADT_VectorAt(vh, index);
+}
+
+AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerTagToPtr(MeshMod_DataContainer* dc, MeshMod_Tag tag) {
+	ASSERT(dc);
+	return CADT_BagOfVectorsLookup(dc->bag, tag);
+}
+
+AL2O3_EXTERN_C void MeshMod_DataContainerTagHandleToDefault(MeshMod_DataContainer* dc, MeshMod_Tag tag, Handle_Handle64 handle) {
+	ASSERT(dc);
+	MeshMod_RegistryHandle registry = MeshMod_MeshGetRegistry(dc->owner);
+
+	CADT_VectorHandle v = MeshMod_DataContainerTagToPtr(dc, tag);
+	uint64_t index0 = *((uint64_t*)Handle_Manager64HandleToPtr(dc->handleManager, handle));
+	memcpy(CADT_VectorAt(v, index0), MeshMod_RegistryDefaultData(registry, tag), MeshMod_RegistryElementSize(registry, tag));
+}
+
+AL2O3_EXTERN_C void MeshMod_DataContainerTagSetTransitive(MeshMod_DataContainer* dc, MeshMod_Tag tag, bool transitive) {
+	uint64_t userData = CADT_DictU64Get(dc->userData, tag);
+
+	if(transitive) {
+		userData |= MeshMod_DataContainerTransitiveFlag;
+	} else {
+		userData &= MeshMod_DataContainerTransitiveFlag;
+	}
+
+	CADT_DictU64Replace(dc->vectorHashs, tag, userData);
+}
+
+AL2O3_EXTERN_C void MeshMod_DataContainerMarkChanged(MeshMod_DataContainer* dc) {
+
+	CADT_VectorHandle toDelete = CADT_VectorCreate(sizeof(MeshMod_Tag));
+	CADT_VectorReserve(toDelete, CADT_BagOfVectorsSize(dc->bag));
+
 	for (size_t i = 0; i < CADT_BagOfVectorsSize(dc->bag); ++i) {
-		CADT_VectorHandle vh = CADT_BagOfVectorsAt(dc->bag, i);
 		MeshMod_Tag tag = CADT_BagOfVectorsGetKey(dc->bag, i);
-		CADT_VectorRemove(vh, index);
 		CADT_DictU64Replace(dc->vectorHashs, tag, 0);
-	}
-	CADT_VectorRemove(dc->validVector, index);
-}
-AL2O3_EXTERN_C void MeshMod_DataContainerSwapRemove(MeshMod_DataContainerHandle handle, size_t index) {
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
-	for (size_t i = 0; i < CADT_BagOfVectorsSize(dc->bag); ++i) {
-		CADT_VectorHandle vh = CADT_BagOfVectorsAt(dc->bag, i);
-		MeshMod_Tag tag = CADT_BagOfVectorsGetKey(dc->bag, i);
-		CADT_VectorSwapRemove(vh, index);
-		CADT_DictU64Replace(dc->vectorHashs, tag, 0);
-	}
-	CADT_VectorSwapRemove(dc->validVector, index);
-}
 
-AL2O3_EXTERN_C CADT_VectorHandle MeshMod_DataContainerGetValidRemappingTable(MeshMod_DataContainerHandle handle) {
-	ASSERT(handle);
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
-	CADT_VectorHandle remapper = CADT_VectorCreate(sizeof(size_t));
-	CADT_VectorResize(remapper, MeshMod_DataContainerSize(dc));
-	size_t newIndex = 0;
-	for (size_t i = 0; i < MeshMod_DataContainerSize(dc); ++i) {
-		bool valid = MeshMod_DataContainerIsValid(dc, i);
-		*((size_t*)CADT_VectorAt(remapper, i)) = valid ? newIndex++ : MeshMod_InvalidIndex;
-	}
-	return remapper;
-}
-
-AL2O3_EXTERN_C void MeshMod_DataContainerCompact(MeshMod_DataContainerHandle handle) {
-	ASSERT(handle);
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
-	CADT_VectorHandle remapper = MeshMod_DataContainerGetValidRemappingTable(handle);
-	size_t newCount = MeshMod_DataContainerRemap(handle, remapper);
-	MeshMod_DataContainerResize(handle, newCount);
-	CADT_VectorDestroy(remapper);
-
-}
-
-AL2O3_EXTERN_C size_t MeshMod_DataContainerRemap(MeshMod_DataContainerHandle handle, CADT_VectorHandle remapper) {
-	ASSERT(handle);
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
-	ASSERT(dc->elementCount == CADT_VectorSize(remapper));
-
-
-	for (size_t i = 0; i < CADT_VectorSize(remapper); ++i) {
-		MeshMod_Tag tag = CADT_BagOfVectorsGetKey(dc->bag, i);
-		size_t newIndex = *((size_t*)CADT_VectorAt(remapper, i));
-		ASSERT(newIndex <= i);
-		if (newIndex != MeshMod_InvalidIndex) {
-			MeshMod_DataContainerReplace(handle, i, newIndex);
+		uint64_t const flags = CADT_DictU64Get(dc->userData, tag) & MeshMod_DataContainerUserDataMask;
+		if (flags & MeshMod_DataContainerTransitiveFlag) {
+			CADT_VectorPushElement(toDelete, &tag);
 		}
 		CADT_DictU64Replace(dc->vectorHashs, tag, 0);
 	}
 
-	// valid array
-	size_t newCount = 0;
-	for (size_t i = 0; i < CADT_VectorSize(remapper); ++i) {
-		newCount++;
-		size_t newIndex = *((size_t*)CADT_VectorAt(remapper, i));
-		ASSERT(newIndex <= i);
-		if (newIndex != MeshMod_InvalidIndex) {
-			CADT_VectorSwap(dc->validVector, i, newIndex);
-		}
+	while(!CADT_VectorIsEmpty(toDelete)) {
+		MeshMod_Tag tag;
+		CADT_VectorPopElement(toDelete, &tag);
+		CADT_BagOfVectorsRemove(dc->bag, tag);
+		CADT_DictU64Remove(dc->vectorHashs, tag);
+		CADT_DictU64Remove(dc->userData, tag);
 	}
-	return newCount;
+
+	CADT_VectorDestroy(toDelete);
 }
 
+AL2O3_EXTERN_C uint64_t MeshMod_DataContainerTagGetOrComputeHash(MeshMod_DataContainer* dc, MeshMod_Tag tag) {
+	CADT_VectorHandle v = MeshMod_DataContainerTagToPtr(dc, tag);
+	if (v == NULL || CADT_VectorSize(v) == 0) {
+		return 0;
+	}
+
+	uint64_t hash = CADT_DictU64Get(dc->vectorHashs, tag);
+	if (hash == 0) {
+		for(size_t i = 0; i < CADT_VectorSize(v);++i) {
+			Handle_Handle64 handle = Handle_Manager64IndexToHandle(dc->handleManager, i);
+			if(Handle_Manager64IsValid(dc->handleManager, handle)) {
+				hash = LZ4_XXHash(CADT_VectorAt(v,i), CADT_VectorElementSize(v), hash);
+			}
+		}
+		ASSERT(hash != 0);
+		CADT_DictU64Replace(dc->vectorHashs, tag, hash);
+	}
+
+	return hash;
+}
+
+AL2O3_EXTERN_C uint64_t MeshMod_DataContainerTagGetUserData(MeshMod_DataContainer* dc, MeshMod_Tag tag) {
+	return CADT_DictU64Get(dc->userData, tag);
+}
+
+AL2O3_EXTERN_C void MeshMod_DataContainerTagSetUserData(MeshMod_DataContainer* dc, MeshMod_Tag tag, uint64_t userData) {
+
+	uint64_t const flags = CADT_DictU64Get(dc->userData, tag) & MeshMod_DataContainerUserDataMask;
+	uint64_t const combined = (userData & MeshMod_DataContainerUserDataMask) | flags;
+
+	CADT_DictU64Replace(dc->vectorHashs, tag, combined);
+}
+
+
+AL2O3_EXTERN_C uint64_t MeshMod_DataContainerIndexCount(MeshMod_DataContainer* dc) {
+	ASSERT(dc);
+
+	return Thread_AtomicLoad64Relaxed(&dc->handleManager->totalHandlesAllocated);
+}
+
+AL2O3_FORCE_INLINE Handle_Handle64 MeshMod_DataContainerIndexToHandle(MeshMod_DataContainer* dc, uint64_t actualIndex) {
+	ASSERT(dc);
+
+	return Handle_Manager64IndexToHandle(dc->handleManager, actualIndex);
+}
 // only for vertex containers
-AL2O3_EXTERN_C MeshMod_VertexIndex MeshMod_DataContainerVertexInterpolate1D(MeshMod_DataContainerHandle handle, MeshMod_VertexIndex i0, MeshMod_VertexIndex i1, float t) {
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
+AL2O3_EXTERN_C MeshMod_VertexHandle MeshMod_VertexDataContainerInterpolate1D(MeshMod_VertexDataContainerHandle vdchandle, MeshMod_VertexHandle handle0, MeshMod_VertexHandle handle1, float t) {
+	MeshMod_DataContainer* dc = vdchandle.dc;
 	MeshMod_RegistryHandle registry = MeshMod_MeshGetRegistry(dc->owner);
 	ASSERT(dc->containerType == MeshMod_TypeVertex);
 
-	MeshMod_DataContainerResize(dc, dc->elementCount + 1);
+	ASSERT(MeshMod_DataContainerIsValid(dc, handle0.handle));
+	ASSERT(MeshMod_DataContainerIsValid(dc, handle1.handle));
+
+	uint64_t i0 = *((uint64_t*)Handle_Manager64HandleToPtr(dc->handleManager, handle0.handle));
+	uint64_t i1 = *((uint64_t*)Handle_Manager64HandleToPtr(dc->handleManager, handle1.handle));
+
+	Handle_Handle64 dstHandle = MeshMod_DataContainerAlloc(dc);
+	uint64_t dstIndex = *((uint64_t*)Handle_Manager64HandleToPtr(dc->handleManager, dstHandle));
 
 	for (size_t i = 0; i < CADT_BagOfVectorsSize(dc->bag); ++i) {
 		CADT_VectorHandle vh = CADT_BagOfVectorsAt(dc->bag, i);
@@ -277,19 +315,29 @@ AL2O3_EXTERN_C MeshMod_VertexIndex MeshMod_DataContainerVertexInterpolate1D(Mesh
 		if (vtable->interpolate2DFunc) {
 			void* src0 = CADT_VectorAt(vh, i0);
 			void* src1 = CADT_VectorAt(vh, i1);
-			void* dst = CADT_VectorAt(vh, dc->elementCount - 1);
+			void* dst = CADT_VectorAt(vh, dstIndex);
 			vtable->interpolate1DFunc(src0, src1, dst, t);
 		}
 	}
-	return dc->elementCount - 1;
+	MeshMod_VertexHandle const vertexHandle = { dstHandle };
+	return vertexHandle;
 }
 
-AL2O3_EXTERN_C MeshMod_VertexIndex MeshMod_DataContainerVertexInterpolate2D(MeshMod_DataContainerHandle handle, MeshMod_VertexIndex i0, MeshMod_VertexIndex i1, MeshMod_VertexIndex i2, float u, float v) {
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
+AL2O3_EXTERN_C MeshMod_VertexHandle MeshMod_VertexDataContainerInterpolate2D(MeshMod_VertexDataContainerHandle vdchandle, MeshMod_VertexHandle handle0, MeshMod_VertexHandle handle1, MeshMod_VertexHandle handle2, float u, float v) {
+	MeshMod_DataContainer* dc = vdchandle.dc;
 	MeshMod_RegistryHandle registry = MeshMod_MeshGetRegistry(dc->owner);
 	ASSERT(dc->containerType == MeshMod_TypeVertex);
 
-	MeshMod_DataContainerResize(dc, dc->elementCount + 1);
+	ASSERT(MeshMod_DataContainerIsValid(dc, handle0.handle));
+	ASSERT(MeshMod_DataContainerIsValid(dc, handle1.handle));
+	ASSERT(MeshMod_DataContainerIsValid(dc, handle2.handle));
+
+	uint64_t i0 = *((uint64_t*)Handle_Manager64HandleToPtr(dc->handleManager, handle0.handle));
+	uint64_t i1 = *((uint64_t*)Handle_Manager64HandleToPtr(dc->handleManager, handle1.handle));
+	uint64_t i2 = *((uint64_t*)Handle_Manager64HandleToPtr(dc->handleManager, handle2.handle));
+
+	Handle_Handle64 dstHandle = MeshMod_DataContainerAlloc(dc);
+	uint64_t dstIndex = *((uint64_t*)Handle_Manager64HandleToPtr(dc->handleManager, dstHandle));
 
 	for (size_t i = 0; i < CADT_BagOfVectorsSize(dc->bag); ++i) {
 		CADT_VectorHandle vh = CADT_BagOfVectorsAt(dc->bag, i);
@@ -301,52 +349,12 @@ AL2O3_EXTERN_C MeshMod_VertexIndex MeshMod_DataContainerVertexInterpolate2D(Mesh
 			void* src0 = CADT_VectorAt(vh, i0);
 			void* src1 = CADT_VectorAt(vh, i1);
 			void* src2 = CADT_VectorAt(vh, i2);
-			void* dst = CADT_VectorAt(vh, dc->elementCount - 1);
+			void* dst = CADT_VectorAt(vh, dstIndex);
 			vtable->interpolate2DFunc(src0, src1, src2, dst, u, v);
 		}
 	}
-	return dc->elementCount - 1;
 
+	MeshMod_VertexHandle const vertexHandle = {dstHandle};
+	return vertexHandle;
 }
 
-AL2O3_EXTERN_C void MeshMod_DataContainerChanged(MeshMod_DataContainerHandle handle) {
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
-	MeshMod_RegistryHandle registry = MeshMod_MeshGetRegistry(dc->owner);
-
-#define TAG_REMOVE_SIZE 128
-	MeshMod_Tag toDelete[TAG_REMOVE_SIZE];
-	size_t toDeleteHead = 0;
-
-	for (size_t i = 0; i < CADT_BagOfVectorsSize(dc->bag); ++i) {
-		MeshMod_Tag tag = CADT_BagOfVectorsGetKey(dc->bag, i);
-		CADT_DictU64Replace(dc->vectorHashs, tag, 0);
-
-		MeshMod_RegistryCommonFunctionTable* vtable = MeshMod_RegistryGetCommonFunctionTable(registry, tag);
-		if (vtable->isTransitoryFunc && vtable->isTransitoryFunc()) {
-			toDelete[toDeleteHead++] = tag;
-			ASSERT(toDeleteHead != TAG_REMOVE_SIZE)
-			if (toDeleteHead == TAG_REMOVE_SIZE) {
-				toDeleteHead = TAG_REMOVE_SIZE - 1;
-			}
-		}
-	}
-#undef TAG_REMOVE_SIZE
-
-	for (size_t i = 0; i < toDeleteHead; ++i) {
-		CADT_BagOfVectorsRemove(dc->bag, toDelete[i]);
-	}
-}
-
-AL2O3_EXTERN_C uint64_t MeshMod_DataContainerHash(MeshMod_DataContainerHandle handle, MeshMod_Tag tag) {
-	MeshMod_DataContainer* dc = (MeshMod_DataContainer*)handle;
-	CADT_VectorHandle v = MeshMod_DataContainerConstLookup(handle, tag);
-	if (v == NULL) return 0;
-	uint64_t hash = CADT_DictU64Get(dc->vectorHashs, tag);
-	if (hash == 0) {
-		hash = LZ4_XXHash(CADT_VectorData(v), CADT_VectorSize(v) * CADT_VectorElementSize(v), 0);
-		ASSERT(hash != 0);
-		CADT_DictU64Replace(dc->vectorHashs, tag, hash);
-	}
-	
-	return hash;
-}
