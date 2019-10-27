@@ -343,9 +343,9 @@ static int VertexPositionXYZSort(MeshMod_MeshHandle handle, MeshMod_VertexHandle
 	MeshMod_VertexPosition const * a = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, ah);
 	MeshMod_VertexPosition const * b = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, bh);
 
-	int const xd = (int) (b->x * 10000.0f) - (a->x * 10000.0f);
-	int const yd = (int) (b->y * 10000.0f) - (a->y * 10000.0f);
-	int const zd = (int) (b->z * 10000.0f) - (a->z * 10000.0f);
+	int const xd = (int const) ((b->x * 10000.0f) - (a->x * 10000.0f));
+	int const yd = (int const) ((b->y * 10000.0f) - (a->y * 10000.0f));
+	int const zd = (int const) ((b->z * 10000.0f) - (a->z * 10000.0f));
 
 	if(xd == 0) {
 		if(yd == 0) {
@@ -360,9 +360,9 @@ static int VertexPositionYXZSort(MeshMod_MeshHandle handle, MeshMod_VertexHandle
 	MeshMod_VertexPosition const * a = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, ah);
 	MeshMod_VertexPosition const * b = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, bh);
 
-	int const xd = (int) (b->x * 10000.0f) - (a->x * 10000.0f);
-	int const yd = (int) (b->y * 10000.0f) - (a->y * 10000.0f);
-	int const zd = (int) (b->z * 10000.0f) - (a->z * 10000.0f);
+	int const xd = (int const) ((b->x * 10000.0f) - (a->x * 10000.0f));
+	int const yd = (int const) ((b->y * 10000.0f) - (a->y * 10000.0f));
+	int const zd = (int const) ((b->z * 10000.0f) - (a->z * 10000.0f));
 
 	if(yd == 0) {
 		if(xd == 0) {
@@ -377,9 +377,9 @@ static int VertexPositionZXYSort(MeshMod_MeshHandle handle, MeshMod_VertexHandle
 	MeshMod_VertexPosition const * a = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, ah);
 	MeshMod_VertexPosition const * b = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, bh);
 
-	int const xd = (int) (b->x * 10000.0f) - (a->x * 10000.0f);
-	int const yd = (int) (b->y * 10000.0f) - (a->y * 10000.0f);
-	int const zd = (int) (b->z * 10000.0f) - (a->z * 10000.0f);
+	int const xd = (int const) ((b->x * 10000.0f) - (a->x * 10000.0f));
+	int const yd = (int const) ((b->y * 10000.0f) - (a->y * 10000.0f));
+	int const zd = (int const) ((b->z * 10000.0f) - (a->z * 10000.0f));
 
 	if(zd == 0) {
 		if(xd == 0) {
