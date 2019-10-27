@@ -35,17 +35,10 @@ set(Deps
 
 ADD_LIB2(${LibName} "${Src}" "${Deps}")
 
-set( Tests
-		runner.cpp
-		test_tag.cpp
-		test_datacontainer.cpp
-		test_mesh.cpp
-		)
 file( GLOB_RECURSE Tests CONFIGURE_DEPENDS tests/*.cpp )
 
 set( TestDeps
 		utils_simple_logmanager
-		gfx_image_impl_basic
 		al2o3_catch2 )
 
 ADD_LIB2_TESTS(${LibName} "${Tests}" "${TestDeps}")
