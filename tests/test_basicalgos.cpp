@@ -65,7 +65,7 @@ TEST_CASE("Mesh Position 3D Extents", "[MeshMod BasicAlgos]") {
 	*pos4 = tri2[1];
 	*pos5 = tri2[2];
 
-	MeshMod_MeshVertexDataHasChanged(handle);
+	MeshMod_MeshTopologyHasChanged(handle);
 
 	aabb = MeshMod_MeshComputeExtents3F(handle, MeshMod_VertexPositionTag);
 	REQUIRE(aabb->dataTag == MeshMod_VertexTagToHashTag(MeshMod_VertexPositionTag));
@@ -79,7 +79,7 @@ TEST_CASE("Mesh Position 3D Extents", "[MeshMod BasicAlgos]") {
 	hash = aabb->hash;
 
 	MeshMod_MeshVertexRelease(handle, vhandle3);
-	MeshMod_MeshVertexDataHasChanged(handle);
+	MeshMod_MeshTopologyHasChanged(handle);
 	aabb = MeshMod_MeshComputeExtents3F(handle, MeshMod_VertexPositionTag);
 	REQUIRE(aabb->dataTag == MeshMod_VertexTagToHashTag(MeshMod_VertexPositionTag));
 	REQUIRE(aabb->hash != hash);
@@ -141,7 +141,7 @@ TEST_CASE("Mesh Position 2D Extents", "[MeshMod BasicAlgos]") {
 	*pos4 = tri2[1];
 	*pos5 = tri2[2];
 
-	MeshMod_MeshVertexDataHasChanged(handle);
+	MeshMod_MeshTopologyHasChanged(handle);
 
 	aabb = MeshMod_MeshComputeExtents2F(handle, MeshMod_VertexVec2FTag);
 	REQUIRE(aabb->dataTag == MeshMod_VertexTagToHashTag(MeshMod_VertexVec2FTag));
@@ -153,7 +153,7 @@ TEST_CASE("Mesh Position 2D Extents", "[MeshMod BasicAlgos]") {
 	hash = aabb->hash;
 
 	MeshMod_MeshVertexRelease(handle, vhandle3);
-	MeshMod_MeshVertexDataHasChanged(handle);
+	MeshMod_MeshTopologyHasChanged(handle);
 	aabb = MeshMod_MeshComputeExtents2F(handle, MeshMod_VertexVec2FTag);
 	REQUIRE(aabb->dataTag == MeshMod_VertexTagToHashTag(MeshMod_VertexVec2FTag));
 	REQUIRE(aabb->hash != hash);
