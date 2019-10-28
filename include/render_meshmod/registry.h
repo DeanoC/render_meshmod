@@ -6,7 +6,7 @@
 typedef void const *(*MeshMod_RegistryDefaultDataFunc)();
 typedef char const *(*MeshMod_RegistryDescriptionFunc)();
 typedef bool (*MeshMod_RegistryEqualFunc)(void const* a, void const* b, float const epsilon);
-typedef void * (*MeshMod_RegistryDestroyFunc)(void* element);
+typedef void (*MeshMod_RegistryDestroyFunc)(void* element);
 typedef double (*MeshMod_RegistryDistanceFunc)();
 
 typedef void (*MeshMod_RegistryVertexInterpolate1DFunc)(void const* a, void const* b, void* r, float const t);
@@ -51,7 +51,8 @@ AL2O3_EXTERN_C size_t MeshMod_RegistryElementSize(MeshMod_RegistryHandle handle,
 AL2O3_EXTERN_C MeshMod_Type MeshMod_RegistryType(MeshMod_RegistryHandle handle, MeshMod_Tag tag);
 AL2O3_EXTERN_C char const* MeshMod_RegistryDescription(MeshMod_RegistryHandle handle, MeshMod_Tag tag);
 AL2O3_EXTERN_C void const* MeshMod_RegistryDefaultData(MeshMod_RegistryHandle handle, MeshMod_Tag tag);
-AL2O3_EXTERN_C bool MeshMod_RegisteryIsDefaultData(MeshMod_RegistryHandle handle, MeshMod_Tag tag, void const* testData);
+AL2O3_EXTERN_C bool MeshMod_RegistryIsDefaultData(MeshMod_RegistryHandle handle, MeshMod_Tag tag, void const* testData);
+AL2O3_EXTERN_C bool MeshMod_RegistryHasDestroy(MeshMod_RegistryHandle handle, MeshMod_Tag tag);
 
 AL2O3_EXTERN_C MeshMod_RegistryCommonFunctionTable* MeshMod_RegistryGetCommonFunctionTable(MeshMod_RegistryHandle handle, MeshMod_Tag tag);
 

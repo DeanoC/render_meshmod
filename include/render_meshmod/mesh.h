@@ -12,9 +12,7 @@ AL2O3_EXTERN_C void MeshMod_MeshDestroy(MeshMod_MeshHandle handle);
 AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshClone(MeshMod_MeshHandle src);
 
 AL2O3_EXTERN_C MeshMod_RegistryHandle MeshMod_MeshGetRegistry(MeshMod_MeshHandle handle);
-AL2O3_EXTERN_C void MeshMod_MeshVertexDataHasChanged(MeshMod_MeshHandle mhandle);
-AL2O3_EXTERN_C void MeshMod_MeshEdgeDataHasChanged(MeshMod_MeshHandle mhandle);
-AL2O3_EXTERN_C void MeshMod_MeshPolygonDataHasChanged(MeshMod_MeshHandle mhandle);
+AL2O3_EXTERN_C void MeshMod_MeshTopologyHasChanged(MeshMod_MeshHandle mhandle);
 
 // Vertex API
 AL2O3_EXTERN_C MeshMod_VertexHandle MeshMod_MeshVertexAlloc(MeshMod_MeshHandle handle);
@@ -30,6 +28,8 @@ AL2O3_EXTERN_C void MeshMod_MeshVertexTagEnsure(MeshMod_MeshHandle mhandle, Mesh
 AL2O3_EXTERN_C bool MeshMod_MeshVertexTagExists(MeshMod_MeshHandle mhandle, MeshMod_VertexTag tag);
 AL2O3_EXTERN_C void MeshMod_MeshVertexTagRemove(MeshMod_MeshHandle mhandle, MeshMod_VertexTag tag);
 AL2O3_EXTERN_C uint64_t MeshMod_MeshVertexTagGetOrComputeHash(MeshMod_MeshHandle mhandle, MeshMod_VertexTag tag);
+AL2O3_EXTERN_C void MeshMod_MeshVertexTagSetTransitive(MeshMod_MeshHandle mhandle, MeshMod_VertexTag tag, bool transitive);
+
 AL2O3_EXTERN_C void* MeshMod_MeshVertexTagHandleToPtr(MeshMod_MeshHandle mhandle, MeshMod_VertexTag tag, MeshMod_VertexHandle handle);
 AL2O3_EXTERN_C void MeshMod_MeshVertexTagHandleToDefault(MeshMod_MeshHandle mhandle,  MeshMod_VertexTag tag, MeshMod_VertexHandle handle);
 AL2O3_EXTERN_C MeshMod_VertexHandle MeshMod_MeshVertexTagIterate(MeshMod_MeshHandle mhandle, MeshMod_VertexTag tag, MeshMod_VertexHandle* previous);
@@ -51,6 +51,8 @@ AL2O3_EXTERN_C void MeshMod_MeshEdgeTagEnsure(MeshMod_MeshHandle mhandle, MeshMo
 AL2O3_EXTERN_C bool MeshMod_MeshEdgeTagExists(MeshMod_MeshHandle mhandle, MeshMod_EdgeTag tag);
 AL2O3_EXTERN_C void MeshMod_MeshEdgeTagRemove(MeshMod_MeshHandle mhandle, MeshMod_EdgeTag tag);
 AL2O3_EXTERN_C uint64_t MeshMod_MeshEdgeTagGetOrComputeHash(MeshMod_MeshHandle mhandle, MeshMod_EdgeTag tag);
+AL2O3_EXTERN_C void MeshMod_MeshEdgeTagSetTransitive(MeshMod_MeshHandle mhandle, MeshMod_EdgeTag tag, bool transitive);
+
 AL2O3_EXTERN_C void* MeshMod_MeshEdgeTagHandleToPtr(MeshMod_MeshHandle mhandle, MeshMod_EdgeTag tag, MeshMod_EdgeHandle handle);
 AL2O3_EXTERN_C void MeshMod_MeshEdgeTagHandleToDefault(MeshMod_MeshHandle mhandle, MeshMod_EdgeTag tag, MeshMod_EdgeHandle handle);
 AL2O3_EXTERN_C MeshMod_EdgeHandle MeshMod_MeshEdgeTagIterate(MeshMod_MeshHandle mhandle, MeshMod_EdgeTag tag, MeshMod_EdgeHandle* previous);
@@ -69,6 +71,7 @@ AL2O3_EXTERN_C void MeshMod_MeshPolygonTagEnsure(MeshMod_MeshHandle mhandle, Mes
 AL2O3_EXTERN_C bool MeshMod_MeshPolygonTagExists(MeshMod_MeshHandle mhandle, MeshMod_PolygonTag tag);
 AL2O3_EXTERN_C void MeshMod_MeshPolygonTagRemove(MeshMod_MeshHandle mhandle, MeshMod_PolygonTag tag);
 AL2O3_EXTERN_C uint64_t MeshMod_MeshPolygonTagGetOrComputeHash(MeshMod_MeshHandle mhandle, MeshMod_PolygonTag tag);
+AL2O3_EXTERN_C void MeshMod_MeshPolygonTagSetTransitive(MeshMod_MeshHandle mhandle, MeshMod_PolygonTag tag, bool transitive);
 AL2O3_EXTERN_C void* MeshMod_MeshPolygonTagHandleToPtr(MeshMod_MeshHandle mhandle, MeshMod_PolygonTag tag, MeshMod_PolygonHandle handle);
 AL2O3_EXTERN_C void MeshMod_MeshPolygonTagHandleToDefault(MeshMod_MeshHandle mhandle,  MeshMod_PolygonTag tag, MeshMod_PolygonHandle handle);
 AL2O3_EXTERN_C MeshMod_PolygonHandle MeshMod_MeshPolygonTagIterate(MeshMod_MeshHandle mhandle, MeshMod_PolygonTag tag, MeshMod_PolygonHandle* previous);

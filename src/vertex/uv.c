@@ -3,6 +3,12 @@
 #include "render_meshmod/vertex/uv.h"
 #include "render_meshmod/registry.h"
 
+// borrow from basic data
+AL2O3_EXTERN_C bool MeshMod_VertexVec2FEqual(void const* va, void const* vb, float const epsilon);
+AL2O3_EXTERN_C double MeshMod_VertexVec2FDistance(void const* va, void const* vb);
+AL2O3_EXTERN_C void MeshMod_VertexVec2FInterpolate1D(void const* va, void const* vb,void* vr, float const t);
+AL2O3_EXTERN_C void MeshMod_VertexVec2FInterpolate2D(void const* va, void const* vb, void const* vc, void* vr, float const u, float const v);
+
 static void const* VertexUvDefaultData() {
 	static Math_Vec2F nan = { NAN, NAN };
 	return &nan;
