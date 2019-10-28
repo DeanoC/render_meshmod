@@ -23,6 +23,5 @@ void MeshMod_AddVertexDefaultsToTagRegistry(MeshMod_RegistryHandle handle) {
 	REGISTER_TYPE(Uv)
 	REGISTER_TYPE(Ring)
 	REGISTER_TYPE(Similar)
-	REGISTER_TYPE(PlaneEquation)
-	REGISTER_TYPE(Vertex2Edges)
+	REGISTER_TYPE(2Edges)
 }
