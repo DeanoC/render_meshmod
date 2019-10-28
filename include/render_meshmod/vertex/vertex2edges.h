@@ -2,6 +2,7 @@
 
 #include "al2o3_platform/platform.h"
 #include "render_meshmod/meshmod.h"
+#include "render_meshmod/mesh.h"
 
 #define MeshMod_Vertex2EdgesTag MESHMOD_VERTEXTAG('V', 'T', '2', 'E', 'D')
 
