@@ -21,13 +21,13 @@
 #define MeshMod_EdgeVec4DTag MESHMOD_EDGETAG('D', 'A', 'T', '4', 'D')
 
 #define MESHMOD_ET_TYPE(postfix, type) typedef type MeshMod_Edge##postfix; \
-AL2O3_FORCE_INLINE MeshMod_Edge##postfix * MeshMod_MeshMod_Edge##postfix##TagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_EdgeHandle edgeHandle) { \
-	return  (MeshMod_Edge##postfix *) MeshMod_MeshEdgeTagHandleToPtr(meshHandle, MeshMod_Edge##postfix##Tag, edgeHandle); \
+AL2O3_FORCE_INLINE MeshMod_Edge##postfix * MeshMod_MeshMod_Edge##postfix##TagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_EdgeHandle edgeHandle, uint8_t userTag) { \
+	return (MeshMod_Edge##postfix *) MeshMod_MeshEdgeTagHandleToPtr(meshHandle, MeshMod_AddUserDataToEdgeTag(MeshMod_Edge##postfix##Tag, userTag), edgeHandle); \
 }
 
 #define MESHMOD_ET_VECTOR_TYPE(postfix) typedef Math_##postfix MeshMod_Edge##postfix; \
-AL2O3_FORCE_INLINE MeshMod_Edge##postfix * MeshMod_MeshMod_Edge##postfix##TagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_EdgeHandle edgeHandle) { \
-	return  (MeshMod_Edge##postfix *) MeshMod_MeshEdgeTagHandleToPtr(meshHandle, MeshMod_Edge##postfix##Tag, edgeHandle); \
+AL2O3_FORCE_INLINE MeshMod_Edge##postfix * MeshMod_MeshMod_Edge##postfix##TagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_EdgeHandle edgeHandle, uint8_t userTag) { \
+	return (MeshMod_Edge##postfix *) MeshMod_MeshEdgeTagHandleToPtr(meshHandle, MeshMod_AddUserDataToEdgeTag(MeshMod_Edge##postfix##Tag, userTag), edgeHandle); \
 }
 
 MESHMOD_ET_TYPE(U8, uint8_t)

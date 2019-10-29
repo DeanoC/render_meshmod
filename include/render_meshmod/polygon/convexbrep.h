@@ -11,6 +11,6 @@ typedef struct MeshMod_PolygonConvexBRep {
 	uint8_t numEdges;
 } MeshMod_PolygonConvexBRep;
 
-AL2O3_FORCE_INLINE MeshMod_PolygonConvexBRep * MeshMod_MeshPolygonConvexBRepTagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_PolygonHandle polygonHandle) {
-	return (MeshMod_PolygonConvexBRep *) MeshMod_MeshPolygonTagHandleToPtr(meshHandle, MeshMod_PolygonConvexBRepTag, polygonHandle);
+AL2O3_FORCE_INLINE MeshMod_PolygonConvexBRep * MeshMod_MeshPolygonConvexBRepTagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_PolygonHandle polygonHandle, uint8_t userTag) {
+	return (MeshMod_PolygonConvexBRep *) MeshMod_MeshPolygonTagHandleToPtr(meshHandle, MeshMod_AddUserDataToPolygonTag(MeshMod_PolygonConvexBRepTag, userTag), polygonHandle);
 }

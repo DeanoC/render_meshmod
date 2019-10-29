@@ -9,6 +9,6 @@ typedef struct MeshMod_PolygonTriBRep {
 	MeshMod_EdgeHandle edge[3];
 } MeshMod_PolygonTriBRep;
 
-AL2O3_FORCE_INLINE MeshMod_PolygonTriBRep * MeshMod_MeshPolygonTriBRepTagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_PolygonHandle polygonHandle) {
-	return  (MeshMod_PolygonTriBRep *) MeshMod_MeshPolygonTagHandleToPtr(meshHandle, MeshMod_PolygonTriBRepTag, polygonHandle);
+AL2O3_FORCE_INLINE MeshMod_PolygonTriBRep * MeshMod_MeshPolygonTriBRepTagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_PolygonHandle polygonHandle, uint8_t userTag) {
+	return  (MeshMod_PolygonTriBRep *) MeshMod_MeshPolygonTagHandleToPtr(meshHandle, MeshMod_AddUserDataToPolygonTag(MeshMod_PolygonTriBRepTag, userTag), polygonHandle);
 }

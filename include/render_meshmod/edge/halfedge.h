@@ -10,8 +10,6 @@ typedef struct MeshMod_EdgeHalfEdge {
 	MeshMod_PolygonHandle polygon;
 } MeshMod_EdgeHalfEdge;
 
-AL2O3_FORCE_INLINE MeshMod_EdgeHalfEdge * MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_EdgeHandle edgeHandle) {
-	return (MeshMod_EdgeHalfEdge *) MeshMod_MeshEdgeTagHandleToPtr(meshHandle,
-																																 MeshMod_EdgeHalfEdgeTag,
-																																edgeHandle);
+AL2O3_FORCE_INLINE MeshMod_EdgeHalfEdge * MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_EdgeHandle edgeHandle, uint8_t userTag) {
+	return (MeshMod_EdgeHalfEdge *) MeshMod_MeshEdgeTagHandleToPtr(meshHandle, MeshMod_AddUserDataToEdgeTag(MeshMod_EdgeHalfEdgeTag, userTag), edgeHandle);
 }

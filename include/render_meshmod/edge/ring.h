@@ -9,8 +9,6 @@ typedef struct MeshMod_EdgeRing {
 	MeshMod_EdgeHandle next;
 } MeshMod_EdgeRing;
 
-AL2O3_FORCE_INLINE MeshMod_EdgeRing * MeshMod_EdgeSimilarTagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_EdgeHandle edgeHandle) {
-	return (MeshMod_EdgeRing *) MeshMod_MeshEdgeTagHandleToPtr(meshHandle,
-																														 MeshMod_EdgeRingTag,
-																																edgeHandle);
+AL2O3_FORCE_INLINE MeshMod_EdgeRing * MeshMod_EdgeSimilarTagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_EdgeHandle edgeHandle, uint8_t userTag) {
+	return (MeshMod_EdgeRing *) MeshMod_MeshEdgeTagHandleToPtr(meshHandle, MeshMod_AddUserDataToEdgeTag(MeshMod_EdgeRingTag, userTag), edgeHandle);
 }

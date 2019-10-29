@@ -16,6 +16,6 @@
 #define MeshMod_VertexSimilarTag MESHMOD_VERTEXTAG('S', 'I', 'M', 'L', 'R')
 typedef MeshMod_VertexHandle MeshMod_VertexSimilar;
 
-AL2O3_FORCE_INLINE MeshMod_VertexSimilar * MeshMod_MeshVertexSimilarTagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_VertexHandle vertexHandle) {
-	return  (MeshMod_VertexSimilar *) MeshMod_MeshVertexTagHandleToPtr(meshHandle, MeshMod_VertexSimilarTag, vertexHandle);
+AL2O3_FORCE_INLINE MeshMod_VertexSimilar * MeshMod_MeshVertexSimilarTagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_VertexHandle vertexHandle, uint8_t userTag) {
+	return  (MeshMod_VertexSimilar *) MeshMod_MeshVertexTagHandleToPtr(meshHandle, MeshMod_AddUserDataToVertexTag(MeshMod_VertexSimilarTag, userTag), vertexHandle);
 }

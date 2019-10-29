@@ -8,8 +8,6 @@ typedef struct MeshMod_PolygonQuadBRep {
 	MeshMod_EdgeHandle edge[4];
 } MeshMod_PolygonQuadBRep;
 
-AL2O3_FORCE_INLINE MeshMod_PolygonQuadBRep * MeshMod_MeshPolygonQuadBRepTagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_PolygonHandle polygonHandle) {
-	return (MeshMod_PolygonQuadBRep *) MeshMod_MeshPolygonTagHandleToPtr(meshHandle,
-																																			 MeshMod_PolygonQuadBRepTag,
-																																			 polygonHandle);
+AL2O3_FORCE_INLINE MeshMod_PolygonQuadBRep * MeshMod_MeshPolygonQuadBRepTagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_PolygonHandle polygonHandle, uint8_t userTag) {
+	return (MeshMod_PolygonQuadBRep *) MeshMod_MeshPolygonTagHandleToPtr(meshHandle, MeshMod_AddUserDataToPolygonTag(MeshMod_PolygonQuadBRepTag, userTag), polygonHandle);
 }

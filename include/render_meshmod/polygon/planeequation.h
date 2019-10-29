@@ -9,8 +9,6 @@ typedef struct MeshMod_PolygonPlaneEquation {
 	Math_Vec4F planeEq;
 } MeshMod_PolygonPlaneEquation;
 
-AL2O3_FORCE_INLINE MeshMod_PolygonPlaneEquation * MeshMod_PolygonPlaneEquationTagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_PolygonHandle polygonHandle) {
-	return (MeshMod_PolygonPlaneEquation *) MeshMod_MeshPolygonTagHandleToPtr(meshHandle,
-																																						MeshMod_PolygonPlaneEquationTag,
-																																			 polygonHandle);
+AL2O3_FORCE_INLINE MeshMod_PolygonPlaneEquation * MeshMod_PolygonPlaneEquationTagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_PolygonHandle polygonHandle, uint8_t userTag) {
+	return (MeshMod_PolygonPlaneEquation *) MeshMod_MeshPolygonTagHandleToPtr(meshHandle,MeshMod_AddUserDataToPolygonTag(MeshMod_PolygonPlaneEquationTag, userTag),polygonHandle);
 }

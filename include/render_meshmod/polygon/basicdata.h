@@ -21,13 +21,13 @@
 #define MeshMod_PolygonVec4DTag MESHMOD_POLYGONTAG('D', 'A', 'T', '4', 'D')
 
 #define MESHMOD_PT_TYPE(postfix, type) typedef type MeshMod_Polygon##postfix; \
-AL2O3_FORCE_INLINE MeshMod_Polygon##postfix * MeshMod_MeshMod_Polygon##postfix##TagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_PolygonHandle polygonHandle) { \
-	return  (MeshMod_Polygon##postfix *) MeshMod_MeshPolygonTagHandleToPtr(meshHandle, MeshMod_Polygon##postfix##Tag, polygonHandle); \
+AL2O3_FORCE_INLINE MeshMod_Polygon##postfix * MeshMod_MeshMod_Polygon##postfix##TagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_PolygonHandle polygonHandle, uint8_t userTag) { \
+	return  (MeshMod_Polygon##postfix *) MeshMod_MeshPolygonTagHandleToPtr(meshHandle, MeshMod_AddUserDataToPolygonTag(MeshMod_Polygon##postfix##Tag, userTag), polygonHandle); \
 }
 
 #define MESHMOD_PT_VECTOR_TYPE(postfix) typedef Math_##postfix MeshMod_Polygon##postfix; \
-AL2O3_FORCE_INLINE MeshMod_Polygon##postfix * MeshMod_MeshMod_Polygon##postfix##TagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_PolygonHandle polygonHandle) { \
-	return  (MeshMod_Polygon##postfix *) MeshMod_MeshPolygonTagHandleToPtr(meshHandle, MeshMod_Polygon##postfix##Tag, polygonHandle); \
+AL2O3_FORCE_INLINE MeshMod_Polygon##postfix * MeshMod_MeshMod_Polygon##postfix##TagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_PolygonHandle polygonHandle, uint8_t userTag) { \
+	return  (MeshMod_Polygon##postfix *) MeshMod_MeshPolygonTagHandleToPtr(meshHandle, MeshMod_AddUserDataToPolygonTag(MeshMod_Polygon##postfix##Tag, userTag), polygonHandle); \
 }
 
 

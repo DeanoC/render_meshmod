@@ -9,6 +9,6 @@ typedef struct MeshMod_PolygonRing {
 	MeshMod_PolygonHandle next;
 } MeshMod_PolygonRing;
 
-AL2O3_FORCE_INLINE MeshMod_PolygonRing * MeshMod_PolygonRingTagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_PolygonHandle polygonHandle) {
-	return  (MeshMod_PolygonRing *) MeshMod_MeshPolygonTagHandleToPtr(meshHandle, MeshMod_PolygonRingTag, polygonHandle);
+AL2O3_FORCE_INLINE MeshMod_PolygonRing * MeshMod_PolygonRingTagHandleToPtr(MeshMod_MeshHandle meshHandle, MeshMod_PolygonHandle polygonHandle, uint8_t userTag) {
+	return  (MeshMod_PolygonRing *) MeshMod_MeshPolygonTagHandleToPtr(meshHandle, MeshMod_AddUserDataToPolygonTag(MeshMod_PolygonRingTag, userTag), polygonHandle);
 }
