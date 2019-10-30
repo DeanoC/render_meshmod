@@ -344,7 +344,7 @@ AL2O3_EXTERN_C uint64_t MeshMod_DataContainerIndexCount(MeshMod_DataContainer* d
 	return Thread_AtomicLoad64Relaxed(&dc->handleManager->totalHandlesAllocated);
 }
 
-AL2O3_FORCE_INLINE Handle_Handle64 MeshMod_DataContainerIndexToHandle(MeshMod_DataContainer* dc, uint64_t actualIndex) {
+AL2O3_EXTERN_C Handle_Handle64 MeshMod_DataContainerIndexToHandle(MeshMod_DataContainer* dc, uint64_t actualIndex) {
 	ASSERT(dc);
 
 	return Handle_Manager64IndexToHandle(dc->handleManager, actualIndex);
