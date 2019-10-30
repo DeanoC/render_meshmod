@@ -17,7 +17,7 @@ TEST_CASE("Mesh Create", "[MeshMod Mesh]") {
 	REQUIRE(MeshMod_MeshHandleIsValid(handle));
 	MeshMod_MeshDestroy(handle);
 
-	// ensure registy is still valid
+	// ensure registry is still valid
 	REQUIRE(MeshMod_RegistryDescription(regHandle, MeshMod_VertexPositionTag.tag) != NULL);
 	MeshMod_RegistryDestroy(regHandle);
 }
