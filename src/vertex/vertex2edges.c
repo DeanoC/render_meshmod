@@ -33,6 +33,19 @@ static void Vertex2EdgesDestroy(void* element) {
 	}
 }
 
+static void Vertex2EdgesClone(void* src, void *dst) {
+	MeshMod_Vertex2Edges * sv2e = (MeshMod_Vertex2Edges*)src;
+	MeshMod_Vertex2Edges * dv2e = (MeshMod_Vertex2Edges*)dst;
+	dv2e->numEdges = sv2e->numEdges;
+	if(sv2e->numEdges >= MeshMod_Vertex2EdgesMaxEmbedded) {
+		dv2e->edges = MEMORY_MALLOC(sv2e->numEdges * sizeof(MeshMod_EdgeHandle));
+	} else {
+		dv2e->edges = dv2e->embedded;
+	}
+
+	memcpy(dv2e->edges, sv2e->edges, sv2e->numEdges * sizeof(MeshMod_EdgeHandle));
+}
+
 AL2O3_EXTERN_C void MeshMod_Vertex2EdgesAddToRegistry(MeshMod_RegistryHandle handle) {
 
 	static MeshMod_RegistryCommonFunctionTable CommonFunctionTable = {
@@ -41,6 +54,7 @@ AL2O3_EXTERN_C void MeshMod_Vertex2EdgesAddToRegistry(MeshMod_RegistryHandle han
 			.destroyFunc = &Vertex2EdgesDestroy,
 			.descriptionFunc = &Vertex2EdgesDescription,
 			.distanceFunc = NULL,
+			.cloneFunc = &Vertex2EdgesClone,
 	};
 
 	static MeshMod_RegistryEdgeFunctionTable EdgeFunctionTable = {

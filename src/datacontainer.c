@@ -51,8 +51,8 @@ AL2O3_EXTERN_C void MeshMod_DataContainerDestroy(MeshMod_DataContainer* dc) {
 			// destroy each element
 			MeshMod_RegistryDestroyFunc destroyFunc = MeshMod_RegistryGetCommonFunctionTable(registry, tag)->destroyFunc;
 			CADT_VectorHandle vh = CADT_BagOfVectorsLookup(dc->bag, tag);
-			for(size_t i = 0;i < CADT_VectorSize(vh);++i) {
-				destroyFunc(CADT_VectorAt(vh, i));
+			for(size_t j = 0;j < CADT_VectorSize(vh);++j) {
+				destroyFunc(CADT_VectorAt(vh, j));
 			}
 		}
 	}
@@ -71,6 +71,21 @@ AL2O3_EXTERN_C MeshMod_DataContainer* MeshMod_DataContainerClone(MeshMod_DataCon
 	dst->userData = CADT_DictU64Clone(src->userData);
 	dst->handleManager = Handle_Manager64Clone(src->handleManager);
 	dst->bag = CADT_BagOfVectorsClone(src->bag);
+
+	MeshMod_RegistryHandle registry = MeshMod_MeshGetRegistry(dst->owner);
+	for (size_t i = 0; i < CADT_BagOfVectorsSize(dst->bag); ++i) {
+		CADT_VectorHandle vh = CADT_BagOfVectorsAt(dst->bag, i);
+		MeshMod_Tag tag = CADT_BagOfVectorsGetKey(dst->bag, i);
+		if(MeshMod_RegistryHasClone(registry, tag)) {
+			// complex clone each element
+			MeshMod_RegistryCloneFunc cloneFunc = MeshMod_RegistryGetCommonFunctionTable(registry, tag)->cloneFunc;
+			CADT_VectorHandle svh = CADT_BagOfVectorsLookup(src->bag, tag);
+			CADT_VectorHandle dvh = CADT_BagOfVectorsLookup(dst->bag, tag);
+			for(size_t j = 0;j < CADT_VectorSize(vh);++j) {
+				cloneFunc(CADT_VectorAt(svh, j), CADT_VectorAt(dvh, j));
+			}
+		}
+	}
 
 	return dst;
 }

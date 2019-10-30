@@ -138,6 +138,10 @@ AL2O3_EXTERN_C bool MeshMod_RegistryHasDestroy(MeshMod_RegistryHandle handle, Me
 	MeshMod_RegistryItem* item = LookupRegistryItem(handle, tag);
 	return item->commonFunctionTable->destroyFunc != NULL;
 }
+AL2O3_EXTERN_C bool MeshMod_RegistryHasClone(MeshMod_RegistryHandle handle, MeshMod_Tag tag) {
+	MeshMod_RegistryItem* item = LookupRegistryItem(handle, tag);
+	return item->commonFunctionTable->cloneFunc != NULL;
+}
 
 AL2O3_EXTERN_C MeshMod_RegistryCommonFunctionTable* MeshMod_RegistryGetCommonFunctionTable(MeshMod_RegistryHandle handle, MeshMod_Tag tag) {
 	MeshMod_RegistryItem* item = LookupRegistryItem(handle, tag);

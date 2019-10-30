@@ -75,7 +75,7 @@ AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshClone(MeshMod_MeshHandle handle) {
 	static MeshMod_MeshHandle const invalid = {0};
 
 	ASSERT(MeshMod_MeshHandleIsValid(handle));
-	MeshMod_Mesh* src = MeshMod_MeshHandleToPtr(handle);
+	MeshMod_Mesh const* src = MeshMod_MeshHandleToPtr(handle);
 	MeshMod_MeshHandle newHandle = MeshMod_MeshHandleAlloc();
 	MeshMod_Mesh* dst = MeshMod_MeshHandleToPtr(newHandle);
 
@@ -86,12 +86,15 @@ AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshClone(MeshMod_MeshHandle handle) {
 	}
 	strcpy((char*)dst->name, src->name);
 
-	if(dst->ownRegistry) {
+	if(src->ownRegistry) {
 		dst->registry = MeshMod_RegistryClone(src->registry);
 		dst->ownRegistry = true;
+	} else {
+		dst->registry = src->registry;
+		dst->ownRegistry = false;
 	}
 
-	dst->arbitaryDataKeys = CADT_VectorClone(src->arbitaryDataKeys);
+ 	dst->arbitaryDataKeys = CADT_VectorClone(src->arbitaryDataKeys);
 	for (size_t i = 0; i < CADT_VectorSize(src->arbitaryDataKeys); ++i) {
 		MeshMod_Tag tag = *(MeshMod_Tag*)CADT_VectorAt(src->arbitaryDataKeys, i);
 		CADT_DictU64Handle cloneDict = CADT_DictU64Clone((CADT_DictU64Handle)CADT_DictU64Get(src->arbitaryData, tag));
