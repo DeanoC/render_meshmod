@@ -130,9 +130,13 @@ AL2O3_EXTERN_C void const* MeshMod_RegistryDefaultData(MeshMod_RegistryHandle ha
 	return item->commonFunctionTable->defaultDataFunc();
 }
 
-AL2O3_EXTERN_C bool MeshMod_RegisteryIsDefaultData(MeshMod_RegistryHandle handle, MeshMod_Tag tag, void const* testData) {
+AL2O3_EXTERN_C bool MeshMod_RegistryIsDefaultData(MeshMod_RegistryHandle handle, MeshMod_Tag tag, void const* testData) {
 	MeshMod_RegistryItem* item = LookupRegistryItem(handle, tag);
 	return memcmp(testData, item->commonFunctionTable->defaultDataFunc(), item->elementSize) == 0;
+}
+AL2O3_EXTERN_C bool MeshMod_RegistryHasDestroy(MeshMod_RegistryHandle handle, MeshMod_Tag tag) {
+	MeshMod_RegistryItem* item = LookupRegistryItem(handle, tag);
+	return item->commonFunctionTable->destroyFunc != NULL;
 }
 
 AL2O3_EXTERN_C MeshMod_RegistryCommonFunctionTable* MeshMod_RegistryGetCommonFunctionTable(MeshMod_RegistryHandle handle, MeshMod_Tag tag) {

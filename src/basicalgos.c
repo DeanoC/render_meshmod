@@ -2,10 +2,13 @@
 #include "render_meshmod/data/aabb.h"
 #include "render_meshmod/vertex/position.h"
 #include "render_meshmod/vertex/similar.h"
+#include "render_meshmod/vertex/vertex2edges.h"
 #include "render_meshmod/edge/halfedge.h"
+#include "render_meshmod/edge/similar.h"
 #include "render_meshmod/polygon/tribrep.h"
 #include "render_meshmod/polygon/quadbrep.h"
 #include "render_meshmod/polygon/convexbrep.h"
+#include "render_meshmod/polygon/planeequation.h"
 #include "mesh.h"
 
 AL2O3_EXTERN_C MeshMod_DataAabb3F const *MeshMod_MeshComputeExtents3F(MeshMod_MeshHandle handle, MeshMod_VertexTag tag) {
@@ -13,7 +16,7 @@ AL2O3_EXTERN_C MeshMod_DataAabb3F const *MeshMod_MeshComputeExtents3F(MeshMod_Me
 	MeshMod_MeshVertexTagEnsure(handle, tag);
 	uint64_t hash = MeshMod_MeshVertexTagGetOrComputeHash(handle, tag);
 
-	MeshMod_Tag dataTag = MeshMod_VertexTagToHashTag(tag);
+	MeshMod_Tag dataTag = MeshMod_VertexTagToHashTag(tag) | 'A';
 	MeshMod_DataAabb3F *aabb;
 	if (MeshMod_MeshHasData(handle, dataTag) == false) {
 		aabb = (MeshMod_DataAabb3F *) MeshMod_MeshAddDataZeroed(handle, dataTag, sizeof(MeshMod_DataAabb3F));
@@ -26,11 +29,11 @@ AL2O3_EXTERN_C MeshMod_DataAabb3F const *MeshMod_MeshComputeExtents3F(MeshMod_Me
 	if (hash == 0 || (aabb->hash != hash)) {
 		aabb->aabb = Math_Aabb3FCreateInvalid();
 		aabb->hash = hash;
-		MeshMod_VertexHandle vhandle = MeshMod_MeshVertexIterate(handle, NULL);
+		MeshMod_VertexHandle vhandle = MeshMod_MeshVertexTagIterate(handle, tag, NULL);
 		while (MeshMod_MeshVertexIsValid(handle, vhandle)) {
 			Math_Vec3F d = *(Math_Vec3F *) MeshMod_MeshVertexTagHandleToPtr(handle, tag, vhandle);
 			Math_ExpandAabb3F(&aabb->aabb, d);
-			vhandle = MeshMod_MeshVertexIterate(handle, &vhandle);
+			vhandle = MeshMod_MeshVertexTagIterate(handle, tag, &vhandle);
 		}
 	}
 
@@ -42,7 +45,7 @@ AL2O3_EXTERN_C MeshMod_DataAabb2F const *MeshMod_MeshComputeExtents2F(MeshMod_Me
 	MeshMod_MeshVertexTagEnsure(handle, tag);
 	uint64_t hash = MeshMod_MeshVertexTagGetOrComputeHash(handle, tag);
 
-	MeshMod_Tag dataTag = MeshMod_VertexTagToHashTag(tag);
+	MeshMod_Tag dataTag = MeshMod_VertexTagToHashTag(tag) | 'A';
 	MeshMod_DataAabb2F *aabb;
 	if (MeshMod_MeshHasData(handle, dataTag) == false) {
 		aabb = (MeshMod_DataAabb2F *) MeshMod_MeshAddDataZeroed(handle, dataTag, sizeof(MeshMod_DataAabb2F));
@@ -55,11 +58,11 @@ AL2O3_EXTERN_C MeshMod_DataAabb2F const *MeshMod_MeshComputeExtents2F(MeshMod_Me
 	if (hash == 0 || (aabb->hash != hash)) {
 		aabb->aabb = Math_Aabb2FCreateInvalid();
 		aabb->hash = hash;
-		MeshMod_VertexHandle vhandle = MeshMod_MeshVertexIterate(handle, NULL);
+		MeshMod_VertexHandle vhandle = MeshMod_MeshVertexTagIterate(handle, tag, NULL);
 		while (MeshMod_MeshVertexIsValid(handle, vhandle)) {
 			Math_Vec2F d = *(Math_Vec2F *) MeshMod_MeshVertexTagHandleToPtr(handle, tag, vhandle);
 			Math_ExpandAabb2F(&aabb->aabb, d);
-			vhandle = MeshMod_MeshVertexIterate(handle, &vhandle);
+			vhandle = MeshMod_MeshVertexTagIterate(handle, tag, &vhandle);
 		}
 	}
 
@@ -82,12 +85,9 @@ AL2O3_EXTERN_C void MeshMod_MeshToConvexBRep(MeshMod_MeshHandle handle) {
 																																		MeshMod_PolygonTriBRepTag,
 																																		NULL);
 		while (MeshMod_MeshPolygonIsValid(handle, triHandle)) {
-			MeshMod_PolygonTriBRep const *triData = (MeshMod_PolygonTriBRep const *) MeshMod_MeshPolygonTagHandleToPtr(handle,
-																																																								 MeshMod_PolygonTriBRepTag,
-																																																								 triHandle);
-			MeshMod_PolygonConvexBRep *convexData = (MeshMod_PolygonConvexBRep *) MeshMod_MeshPolygonTagHandleToPtr(handle,
-																																																							MeshMod_PolygonConvexBRepTag,
-																																																							triHandle);
+			MeshMod_PolygonTriBRep const *triData = MeshMod_MeshPolygonTriBRepTagHandleToPtr(handle, triHandle, 0);
+			MeshMod_PolygonConvexBRep *convexData = MeshMod_MeshPolygonConvexBRepTagHandleToPtr(handle, triHandle, 0);
+
 			convexData->numEdges = 3;
 			convexData->edge[0] = triData->edge[0];
 			convexData->edge[1] = triData->edge[1];
@@ -103,13 +103,9 @@ AL2O3_EXTERN_C void MeshMod_MeshToConvexBRep(MeshMod_MeshHandle handle) {
 	if (MeshMod_MeshPolygonTagExists(handle, MeshMod_PolygonQuadBRepTag)) {
 		MeshMod_PolygonHandle quadHandle = MeshMod_MeshPolygonTagIterate(handle, MeshMod_PolygonQuadBRepTag, NULL);
 		while (MeshMod_MeshPolygonIsValid(handle, quadHandle)) {
-			MeshMod_PolygonQuadBRep const *quadData = (MeshMod_PolygonQuadBRep const *) MeshMod_MeshPolygonTagHandleToPtr(
-					handle,
-					MeshMod_PolygonQuadBRepTag,
-					quadHandle);
-			MeshMod_PolygonConvexBRep *convexData = (MeshMod_PolygonConvexBRep *) MeshMod_MeshPolygonTagHandleToPtr(handle,
-																																																							MeshMod_PolygonConvexBRepTag,
-																																																							quadHandle);
+			MeshMod_PolygonQuadBRep const *quadData = MeshMod_MeshPolygonQuadBRepTagHandleToPtr(handle, quadHandle, 0);
+			MeshMod_PolygonConvexBRep *convexData = MeshMod_MeshPolygonConvexBRepTagHandleToPtr(handle, quadHandle, 0);
+
 			convexData->numEdges = 4;
 			convexData->edge[0] = quadData->edge[0];
 			convexData->edge[1] = quadData->edge[1];
@@ -121,7 +117,7 @@ AL2O3_EXTERN_C void MeshMod_MeshToConvexBRep(MeshMod_MeshHandle handle) {
 		MeshMod_MeshPolygonTagRemove(handle, MeshMod_PolygonQuadBRepTag);
 	}
 
-	MeshMod_MeshPolygonDataHasChanged(handle);
+	MeshMod_MeshTopologyHasChanged(handle);
 }
 
 AL2O3_EXTERN_C void MeshMod_MeshTrianglate(MeshMod_MeshHandle handle) {
@@ -135,14 +131,9 @@ AL2O3_EXTERN_C void MeshMod_MeshTrianglate(MeshMod_MeshHandle handle) {
 																																		 NULL);
 
 		while (MeshMod_MeshPolygonIsValid(handle, quadHandle)) {
-			MeshMod_PolygonQuadBRep const *quadData = (MeshMod_PolygonQuadBRep const *) MeshMod_MeshPolygonTagHandleToPtr(
-					handle,
-					MeshMod_PolygonQuadBRepTag,
-					quadHandle);
+			MeshMod_PolygonQuadBRep const *quadData = MeshMod_MeshPolygonQuadBRepTagHandleToPtr(handle, quadHandle, 0);
+			MeshMod_PolygonTriBRep * triData0 = MeshMod_MeshPolygonTriBRepTagHandleToPtr(handle, quadHandle, 0);
 
-			MeshMod_PolygonTriBRep *triData0 = (MeshMod_PolygonTriBRep *) MeshMod_MeshPolygonTagHandleToPtr(handle,
-																																																			MeshMod_PolygonTriBRepTag,
-																																																			quadHandle);
 			triData0->edge[0] = quadData->edge[0];
 			triData0->edge[1] = quadData->edge[1];
 			triData0->edge[2] = quadData->edge[2];
@@ -151,22 +142,14 @@ AL2O3_EXTERN_C void MeshMod_MeshTrianglate(MeshMod_MeshHandle handle) {
 			MeshMod_EdgeHandle nedge2 = MeshMod_MeshEdgeDuplicate(handle, quadData->edge[2]);
 			MeshMod_EdgeHandle nedge0 = MeshMod_MeshEdgeDuplicate(handle, quadData->edge[0]);
 
-			MeshMod_PolygonTriBRep *triData1 = (MeshMod_PolygonTriBRep *) MeshMod_MeshPolygonTagHandleToPtr(handle,
-																																																			MeshMod_PolygonTriBRepTag,
-																																																			newTriHandle);
+			MeshMod_PolygonTriBRep * triData1 = MeshMod_MeshPolygonTriBRepTagHandleToPtr(handle, newTriHandle, 0);
 			triData1->edge[0] = nedge2;
 			triData1->edge[1] = quadData->edge[3];
 			triData1->edge[2] = nedge0;
 
-			MeshMod_EdgeHalfEdge *hedge0 = (MeshMod_EdgeHalfEdge *) MeshMod_MeshEdgeTagHandleToPtr(handle,
-																																														 MeshMod_EdgeHalfEdgeTag,
-																																														 triData1->edge[0]);
-			MeshMod_EdgeHalfEdge *hedge1 = (MeshMod_EdgeHalfEdge *) MeshMod_MeshEdgeTagHandleToPtr(handle,
-																																														 MeshMod_EdgeHalfEdgeTag,
-																																														 triData1->edge[1]);
-			MeshMod_EdgeHalfEdge *hedge2 = (MeshMod_EdgeHalfEdge *) MeshMod_MeshEdgeTagHandleToPtr(handle,
-																																														 MeshMod_EdgeHalfEdgeTag,
-																																														 triData1->edge[2]);
+			MeshMod_EdgeHalfEdge *hedge0 = MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(handle, triData1->edge[0], 0);
+			MeshMod_EdgeHalfEdge *hedge1 = MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(handle, triData1->edge[1], 0);
+			MeshMod_EdgeHalfEdge *hedge2 = MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(handle, triData1->edge[2], 0);
 			hedge0->polygon = newTriHandle;
 			hedge1->polygon = newTriHandle;
 			hedge2->polygon = newTriHandle;
@@ -185,9 +168,8 @@ AL2O3_EXTERN_C void MeshMod_MeshTrianglate(MeshMod_MeshHandle handle) {
 																																			 NULL);
 		while (MeshMod_MeshPolygonIsValid(handle, convexHandle)) {
 			// we just want the edge count before we invalidate the data so safest way
-			uint8_t const numEdges = ((MeshMod_PolygonConvexBRep *) MeshMod_MeshPolygonTagHandleToPtr(handle,
-																																															 MeshMod_PolygonConvexBRepTag,
-																																															 convexHandle))->numEdges;
+			uint8_t const numEdges = MeshMod_MeshPolygonConvexBRepTagHandleToPtr(handle, convexHandle, 0)->numEdges;
+
 			// pre-allocate space for the new triangles (if any)
 			MeshMod_PolygonHandle phandles[MeshMod_PolygonConvexMaxEdges-2];
 			phandles[0] = convexHandle; // reuse this handle for the first triangle
@@ -197,35 +179,23 @@ AL2O3_EXTERN_C void MeshMod_MeshTrianglate(MeshMod_MeshHandle handle) {
 				MeshMod_MeshPolygonTagHandleToDefault(handle, MeshMod_PolygonConvexBRepTag, phandles[i]);
 			}
 			// pointer won't change now
-			MeshMod_PolygonConvexBRep* convexData = (MeshMod_PolygonConvexBRep *) MeshMod_MeshPolygonTagHandleToPtr(handle,
-																																									 MeshMod_PolygonConvexBRepTag,
-																																									 convexHandle);
+			MeshMod_PolygonConvexBRep* convexData = MeshMod_MeshPolygonConvexBRepTagHandleToPtr(handle, convexHandle, 0);
 
 			// special case the first triangle as it replaces the polygon handle of the original convex
-			MeshMod_PolygonTriBRep *triData0 = (MeshMod_PolygonTriBRep *) MeshMod_MeshPolygonTagHandleToPtr(handle,
-																																																			MeshMod_PolygonTriBRepTag,
-																																																			convexHandle);
+			MeshMod_PolygonTriBRep *triData0 = MeshMod_MeshPolygonTriBRepTagHandleToPtr(handle, convexHandle, 0);
 			triData0->edge[0] = convexData->edge[0];
 			triData0->edge[1] = convexData->edge[1];
 			triData0->edge[2] = convexData->edge[2];
 
 			for (uint8_t i = 2; i < convexData->numEdges - 1; i++) {
-				MeshMod_PolygonTriBRep *triData1 = (MeshMod_PolygonTriBRep *) MeshMod_MeshPolygonTagHandleToPtr(handle,
-																																																				MeshMod_PolygonTriBRepTag,
-																																																				phandles[i-1]);
+				MeshMod_PolygonTriBRep *triData1 = MeshMod_MeshPolygonTriBRepTagHandleToPtr(handle, phandles[i-1], 0);
 				triData1->edge[0] = MeshMod_MeshEdgeDuplicate(handle, convexData->edge[i]);
 				triData1->edge[1] = convexData->edge[i + 1];
 				triData1->edge[2] = MeshMod_MeshEdgeDuplicate(handle, convexData->edge[0]);
 
-				MeshMod_EdgeHalfEdge *hedge0 = (MeshMod_EdgeHalfEdge *) MeshMod_MeshEdgeTagHandleToPtr(handle,
-																																															 MeshMod_EdgeHalfEdgeTag,
-																																															 triData1->edge[0]);
-				MeshMod_EdgeHalfEdge *hedge1 = (MeshMod_EdgeHalfEdge *) MeshMod_MeshEdgeTagHandleToPtr(handle,
-																																															 MeshMod_EdgeHalfEdgeTag,
-																																															 triData1->edge[1]);
-				MeshMod_EdgeHalfEdge *hedge2 = (MeshMod_EdgeHalfEdge *) MeshMod_MeshEdgeTagHandleToPtr(handle,
-																																															 MeshMod_EdgeHalfEdgeTag,
-																																															 triData1->edge[2]);
+				MeshMod_EdgeHalfEdge *hedge0 = MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(handle, triData1->edge[0], 0);
+				MeshMod_EdgeHalfEdge *hedge1 = MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(handle, triData1->edge[1], 0);
+				MeshMod_EdgeHalfEdge *hedge2 = MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(handle, triData1->edge[2], 0);
 				hedge0->polygon = phandles[i-1];
 				hedge1->polygon = phandles[i-1];
 				hedge2->polygon = phandles[i-1];
@@ -238,7 +208,7 @@ AL2O3_EXTERN_C void MeshMod_MeshTrianglate(MeshMod_MeshHandle handle) {
 		MeshMod_MeshPolygonTagRemove(handle, MeshMod_PolygonConvexBRepTag);
 
 	}
-	MeshMod_MeshPolygonDataHasChanged(handle);
+	MeshMod_MeshTopologyHasChanged(handle);
 }
 
 static MeshMod_MeshHandle s_mesh;
@@ -340,12 +310,12 @@ AL2O3_EXTERN_C CADT_VectorHandle MeshMod_MeshPolygonTagSort(MeshMod_MeshHandle h
 }
 
 static int VertexPositionXYZSort(MeshMod_MeshHandle handle, MeshMod_VertexHandle ah, MeshMod_VertexHandle bh) {
-	MeshMod_VertexPosition const * a = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, ah);
-	MeshMod_VertexPosition const * b = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, bh);
+	MeshMod_VertexPosition const * a = MeshMod_MeshVertexPositionTagHandleToPtr(handle, ah, 0);
+	MeshMod_VertexPosition const * b = MeshMod_MeshVertexPositionTagHandleToPtr(handle, bh, 0);
 
-	int const xd = (int) (b->x * 10000.0f) - (a->x * 10000.0f);
-	int const yd = (int) (b->y * 10000.0f) - (a->y * 10000.0f);
-	int const zd = (int) (b->z * 10000.0f) - (a->z * 10000.0f);
+	int const xd = (int const) ((b->x * 10000.0f) - (a->x * 10000.0f));
+	int const yd = (int const) ((b->y * 10000.0f) - (a->y * 10000.0f));
+	int const zd = (int const) ((b->z * 10000.0f) - (a->z * 10000.0f));
 
 	if(xd == 0) {
 		if(yd == 0) {
@@ -357,12 +327,12 @@ static int VertexPositionXYZSort(MeshMod_MeshHandle handle, MeshMod_VertexHandle
 }
 
 static int VertexPositionYXZSort(MeshMod_MeshHandle handle, MeshMod_VertexHandle ah, MeshMod_VertexHandle bh) {
-	MeshMod_VertexPosition const * a = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, ah);
-	MeshMod_VertexPosition const * b = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, bh);
+	MeshMod_VertexPosition const * a = MeshMod_MeshVertexPositionTagHandleToPtr(handle, ah, 0);
+	MeshMod_VertexPosition const * b = MeshMod_MeshVertexPositionTagHandleToPtr(handle, bh, 0);
 
-	int const xd = (int) (b->x * 10000.0f) - (a->x * 10000.0f);
-	int const yd = (int) (b->y * 10000.0f) - (a->y * 10000.0f);
-	int const zd = (int) (b->z * 10000.0f) - (a->z * 10000.0f);
+	int const xd = (int const) ((b->x * 10000.0f) - (a->x * 10000.0f));
+	int const yd = (int const) ((b->y * 10000.0f) - (a->y * 10000.0f));
+	int const zd = (int const) ((b->z * 10000.0f) - (a->z * 10000.0f));
 
 	if(yd == 0) {
 		if(xd == 0) {
@@ -374,12 +344,12 @@ static int VertexPositionYXZSort(MeshMod_MeshHandle handle, MeshMod_VertexHandle
 }
 
 static int VertexPositionZXYSort(MeshMod_MeshHandle handle, MeshMod_VertexHandle ah, MeshMod_VertexHandle bh) {
-	MeshMod_VertexPosition const * a = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, ah);
-	MeshMod_VertexPosition const * b = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, bh);
+	MeshMod_VertexPosition const * a = MeshMod_MeshVertexPositionTagHandleToPtr(handle, ah, 0);
+	MeshMod_VertexPosition const * b = MeshMod_MeshVertexPositionTagHandleToPtr(handle, bh, 0);
 
-	int const xd = (int) (b->x * 10000.0f) - (a->x * 10000.0f);
-	int const yd = (int) (b->y * 10000.0f) - (a->y * 10000.0f);
-	int const zd = (int) (b->z * 10000.0f) - (a->z * 10000.0f);
+	int const xd = (int const) ((b->x * 10000.0f) - (a->x * 10000.0f));
+	int const yd = (int const) ((b->y * 10000.0f) - (a->y * 10000.0f));
+	int const zd = (int const) ((b->z * 10000.0f) - (a->z * 10000.0f));
 
 	if(zd == 0) {
 		if(xd == 0) {
@@ -412,9 +382,8 @@ AL2O3_EXTERN_C void MeshMod_MeshComputeSimilarPositions(MeshMod_MeshHandle handl
 
 	for (int i = 0; i < (int) CADT_VectorSize(sortedForEAndWhizz); ++i) {
 		MeshMod_VertexHandle vh = *(MeshMod_VertexHandle *) CADT_VectorAt(sortedForEAndWhizz, i);
-		MeshMod_VertexPosition const *start =
-				(MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, vh);
-		MeshMod_VertexHandle * t = (MeshMod_VertexHandle *) MeshMod_MeshVertexTagHandleToPtr(handle, tag, vh);
+		MeshMod_VertexPosition const * start = MeshMod_MeshVertexPositionTagHandleToPtr(handle, vh, 0);
+		MeshMod_VertexHandle * t = MeshMod_MeshVertexSimilarTagHandleToPtr(handle, vh, 'P');
 		*t = vh; // start with self linked
 
 		// we know the list is in sorted order so we search backwards marking any within a fudged similarity to our
@@ -422,8 +391,7 @@ AL2O3_EXTERN_C void MeshMod_MeshComputeSimilarPositions(MeshMod_MeshHandle handl
 		int curI = i - 1;
 		while (curI > 0) {
 			MeshMod_VertexHandle ah = *(MeshMod_VertexHandle *) CADT_VectorAt(sortedForEAndWhizz, curI);
-			MeshMod_VertexPosition const
-					*a = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, ah);
+			MeshMod_VertexPosition const * a = MeshMod_MeshVertexPositionTagHandleToPtr(handle, ah, 0);
 
 			// if we are this far away along the sorted axis we can't be similar
 			Math_Vec3F const axialdistance = Math_SubVec3F(*a, *start);
@@ -435,7 +403,7 @@ AL2O3_EXTERN_C void MeshMod_MeshComputeSimilarPositions(MeshMod_MeshHandle handl
 			float const distance = Math_LengthVec3F(axialdistance);
 			if(distance < similarity) {
 				// link current vertex into the ring
-				MeshMod_VertexHandle * l = (MeshMod_VertexHandle *) MeshMod_MeshVertexTagHandleToPtr(handle, tag, ah);
+				MeshMod_VertexHandle * l = MeshMod_MeshVertexSimilarTagHandleToPtr(handle, ah, 'P');
 				*t = *l;
 				*l = vh;
 				// no more iteration needed, as the vertex we just linked to has already search backwards and linked
@@ -446,4 +414,115 @@ AL2O3_EXTERN_C void MeshMod_MeshComputeSimilarPositions(MeshMod_MeshHandle handl
 	}
 
 	CADT_VectorDestroy(sortedForEAndWhizz);
+}
+
+AL2O3_EXTERN_C void MeshMod_MeshComputeVertex2Edges(MeshMod_MeshHandle handle) {
+
+	if(MeshMod_MeshVertexTagExists(handle, MeshMod_Vertex2EdgesTag)) {
+		return;
+	}
+
+	MeshMod_MeshVertexTagEnsure(handle, MeshMod_Vertex2EdgesTag);
+	MeshMod_MeshVertexTagSetTransitive(handle, MeshMod_Vertex2EdgesTag, true);
+
+	if(MeshMod_MeshPolygonTagExists(handle, MeshMod_PolygonTriBRepTag)) {
+		MeshMod_PolygonHandle phandle = MeshMod_MeshPolygonTagIterate(handle, MeshMod_PolygonTriBRepTag, NULL);
+		while(MeshMod_MeshPolygonIsValid(handle, phandle)) {
+
+			MeshMod_PolygonTriBRep const * triData = MeshMod_MeshPolygonTriBRepTagHandleToPtr(handle, phandle, 0);
+			for(int i = 0; i < 3; ++i) {
+				MeshMod_EdgeHalfEdge const * ehe = MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(handle, triData->edge[i], 0);
+				MeshMod_Vertex2Edges * v2e = MeshMod_MeshVertex2EdgesTagHandleToPtr(handle, ehe->vertex, 0);
+				bool alreadyIn = false;
+				for(int j = 0;j < v2e->numEdges;++j) {
+					if( Handle_HandleEqual64(v2e->edges[j].handle, triData->edge[i].handle) ) {
+						alreadyIn = true;
+						break;
+					}
+				}
+				if(!alreadyIn) {
+					v2e->edges = (MeshMod_EdgeHandle*) MEMORY_REALLOC(v2e->edges, sizeof(Handle_Handle64) * (v2e->numEdges+1));
+					v2e->edges[v2e->numEdges++] = triData->edge[i];
+				}
+			}
+
+			phandle = MeshMod_MeshPolygonTagIterate(handle, MeshMod_PolygonTriBRepTag, &phandle);
+		}
+	}
+
+	if(MeshMod_MeshPolygonTagExists(handle, MeshMod_PolygonQuadBRepTag)) {
+
+		MeshMod_PolygonHandle phandle = MeshMod_MeshPolygonTagIterate(handle, MeshMod_PolygonQuadBRepTag, NULL);
+		while(MeshMod_MeshPolygonIsValid(handle, phandle)) {
+
+			MeshMod_PolygonQuadBRep const * quadData = MeshMod_MeshPolygonQuadBRepTagHandleToPtr(handle, phandle, 0);
+			for(int i = 0; i < 4; ++i) {
+				MeshMod_EdgeHalfEdge const * ehe = MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(handle, quadData->edge[i], 0);
+				MeshMod_Vertex2Edges * v2e = MeshMod_MeshVertex2EdgesTagHandleToPtr(handle, ehe->vertex, 0);
+				bool alreadyIn = false;
+				for(int j = 0;j < v2e->numEdges;++j) {
+					if( Handle_HandleEqual64(v2e->edges[j].handle, quadData->edge[i].handle) ) {
+						alreadyIn = true;
+						break;
+					}
+				}
+				if(!alreadyIn) {
+					v2e->edges = (MeshMod_EdgeHandle*) MEMORY_REALLOC(v2e->edges, sizeof(Handle_Handle64) * (v2e->numEdges+1));
+					v2e->edges[v2e->numEdges++] = quadData->edge[i];
+				}
+			}
+			phandle = MeshMod_MeshPolygonTagIterate(handle, MeshMod_PolygonQuadBRepTag, &phandle);
+		}
+	}
+
+	if(MeshMod_MeshPolygonTagExists(handle, MeshMod_PolygonConvexBRepTag)) {
+
+		MeshMod_PolygonHandle phandle = MeshMod_MeshPolygonTagIterate(handle, MeshMod_PolygonConvexBRepTag, NULL);
+		while(MeshMod_MeshPolygonIsValid(handle, phandle)) {
+
+			MeshMod_PolygonConvexBRep const * convexData = MeshMod_MeshPolygonConvexBRepTagHandleToPtr(handle, phandle, 0);
+			for(int i = 0; i < convexData->numEdges; ++i) {
+				MeshMod_EdgeHalfEdge const * ehe = MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(handle, convexData->edge[i], 0);
+				MeshMod_Vertex2Edges * v2e = MeshMod_MeshVertex2EdgesTagHandleToPtr(handle, ehe->vertex, 0);
+				bool alreadyIn = false;
+				for(int j = 0;j < v2e->numEdges;++j) {
+					if( Handle_HandleEqual64(v2e->edges[j].handle, convexData->edge[i].handle) ) {
+						alreadyIn = true;
+						break;
+					}
+				}
+				if(!alreadyIn) {
+					v2e->edges = (MeshMod_EdgeHandle*) MEMORY_REALLOC(v2e->edges, sizeof(Handle_Handle64) * (v2e->numEdges+1));
+					v2e->edges[v2e->numEdges++] = convexData->edge[i];
+				}
+			}
+			phandle = MeshMod_MeshPolygonTagIterate(handle, MeshMod_PolygonConvexBRepTag, &phandle);
+		}
+	}
+
+}
+
+AL2O3_EXTERN_C void MeshMod_MeshComputePlaneEquations(MeshMod_MeshHandle handle) {
+
+	MeshMod_MeshPolygonTagEnsure(handle, MeshMod_PolygonPlaneEquationTag);
+
+	if (MeshMod_MeshPolygonTagExists(handle, MeshMod_PolygonTriBRepTag)) {
+		MeshMod_PolygonHandle triHandle = MeshMod_MeshPolygonTagIterate(handle,
+																																		 MeshMod_PolygonTriBRepTag,
+																																		 NULL);
+
+		while (MeshMod_MeshPolygonIsValid(handle, triHandle)) {
+			MeshMod_PolygonTriBRep const *triData = (MeshMod_PolygonTriBRep const *) MeshMod_MeshPolygonTagHandleToPtr(
+																							handle,
+																							MeshMod_PolygonTriBRepTag,
+																							triHandle);
+			if(MeshMod_MeshEdgeIsValid(handle, triData->edge[0]) &&
+					MeshMod_MeshEdgeIsValid(handle, triData->edge[1]) &&
+					MeshMod_MeshEdgeIsValid(handle, triData->edge[2]) ) {
+			}
+
+
+			triHandle = MeshMod_MeshPolygonTagIterate(handle, MeshMod_PolygonTriBRepTag, &triHandle);
+		}
+	}
 }

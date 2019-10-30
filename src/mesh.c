@@ -6,7 +6,6 @@
 #include "render_meshmod/mesh.h"
 #include "render_meshmod/registry.h"
 #include "datacontainer.h"
-#include "registry.h"
 #include "mesh.h"
 
 
@@ -114,32 +113,13 @@ AL2O3_EXTERN_C MeshMod_RegistryHandle MeshMod_MeshGetRegistry(MeshMod_MeshHandle
 	return mesh->registry;
 }
 
-AL2O3_EXTERN_C void MeshMod_MeshVertexDataHasChanged(MeshMod_MeshHandle mhandle) {
+AL2O3_EXTERN_C void MeshMod_MeshTopologyHasChanged(MeshMod_MeshHandle mhandle) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return;
 	}
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
-	// if vertex data has changed, edge and polygon cached data is probably wrong as well
 	MeshMod_DataContainerMarkChanged(mesh->vertices.dc);
 	MeshMod_DataContainerMarkChanged(mesh->edges.dc);
-	MeshMod_DataContainerMarkChanged(mesh->polygons.dc);
-}
-
-AL2O3_EXTERN_C void MeshMod_MeshEdgeDataHasChanged(MeshMod_MeshHandle mhandle) {
-	if(!MeshMod_MeshHandleIsValid(mhandle)) {
-		return;
-	}
-	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
-	// if edge data has changed, polygon cached data is probably wrong as well
-	MeshMod_DataContainerMarkChanged(mesh->edges.dc);
-	MeshMod_DataContainerMarkChanged(mesh->polygons.dc);
-}
-
-AL2O3_EXTERN_C void MeshMod_MeshPolygonDataHasChanged(MeshMod_MeshHandle mhandle) {
-	if(!MeshMod_MeshHandleIsValid(mhandle)) {
-		return;
-	}
-	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
 	MeshMod_DataContainerMarkChanged(mesh->polygons.dc);
 }
 
@@ -300,6 +280,15 @@ AL2O3_EXTERN_C uint64_t MeshMod_MeshVertexTagGetOrComputeHash(MeshMod_MeshHandle
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
 	return MeshMod_DataContainerTagGetOrComputeHash(mesh->vertices.dc, tag.tag);
 }
+
+AL2O3_EXTERN_C void MeshMod_MeshVertexTagSetTransitive(MeshMod_MeshHandle mhandle, MeshMod_VertexTag tag, bool transitive) {
+	if(!MeshMod_MeshHandleIsValid(mhandle)) {
+		return;
+	}
+	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
+	MeshMod_DataContainerTagSetTransitive(mesh->vertices.dc, tag.tag, transitive);
+}
+
 AL2O3_EXTERN_C void* MeshMod_MeshVertexTagHandleToPtr(MeshMod_MeshHandle mhandle, MeshMod_VertexTag tag, MeshMod_VertexHandle handle) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return NULL;
@@ -319,15 +308,13 @@ AL2O3_EXTERN_C MeshMod_VertexHandle MeshMod_MeshVertexTagIterate(MeshMod_MeshHan
 	MeshMod_VertexHandle handle = MeshMod_MeshVertexIterate(mhandle, previous);
 
 	while (MeshMod_MeshVertexIsValid(mhandle, handle)) {
-		if (!MeshMod_RegisteryIsDefaultData(mesh->registry, tag.tag, MeshMod_MeshVertexTagHandleToPtr(mhandle, tag, handle))) {
+		if (!MeshMod_RegistryIsDefaultData(mesh->registry, tag.tag, MeshMod_MeshVertexTagHandleToPtr(mhandle, tag, handle))) {
 			return handle;
 		}
 		handle = MeshMod_MeshVertexIterate(mhandle, &handle);
 	}
 	return handle;
 }
-
-
 
 AL2O3_EXTERN_C MeshMod_VertexHandle MeshMod_MeshVertexInterpolate1D(MeshMod_MeshHandle mhandle, MeshMod_VertexHandle handle0, MeshMod_VertexHandle handle1, float t) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
@@ -465,6 +452,13 @@ AL2O3_EXTERN_C uint64_t MeshMod_MeshEdgeTagGetOrComputeHash(MeshMod_MeshHandle m
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
 	return MeshMod_DataContainerTagGetOrComputeHash(mesh->edges.dc, tag.tag);
 }
+AL2O3_EXTERN_C void MeshMod_MeshEdgeTagSetTransitive(MeshMod_MeshHandle mhandle, MeshMod_EdgeTag tag, bool transitive) {
+	if(!MeshMod_MeshHandleIsValid(mhandle)) {
+		return;
+	}
+	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
+	MeshMod_DataContainerTagSetTransitive(mesh->edges.dc, tag.tag, transitive);
+}
 AL2O3_EXTERN_C void* MeshMod_MeshEdgeTagHandleToPtr(MeshMod_MeshHandle mhandle, MeshMod_EdgeTag tag, MeshMod_EdgeHandle handle) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
 		return NULL;
@@ -484,7 +478,7 @@ AL2O3_EXTERN_C MeshMod_EdgeHandle MeshMod_MeshEdgeTagIterate(MeshMod_MeshHandle 
 	MeshMod_EdgeHandle handle = MeshMod_MeshEdgeIterate(mhandle, previous);
 
 	while (MeshMod_MeshEdgeIsValid(mhandle, handle)) {
-		if (!MeshMod_RegisteryIsDefaultData(mesh->registry, tag.tag, MeshMod_MeshEdgeTagHandleToPtr(mhandle, tag, handle))) {
+		if (!MeshMod_RegistryIsDefaultData(mesh->registry, tag.tag, MeshMod_MeshEdgeTagHandleToPtr(mhandle, tag, handle))) {
 			return handle;
 		}
 		handle = MeshMod_MeshEdgeIterate(mhandle, &handle);
@@ -610,6 +604,13 @@ AL2O3_EXTERN_C uint64_t MeshMod_MeshPolygonTagGetOrComputeHash(MeshMod_MeshHandl
 	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
 	return MeshMod_DataContainerTagGetOrComputeHash(mesh->polygons.dc, tag.tag);
 }
+AL2O3_EXTERN_C void MeshMod_MeshPolygonTagSetTransitive(MeshMod_MeshHandle mhandle, MeshMod_PolygonTag tag, bool transitive) {
+	if(!MeshMod_MeshHandleIsValid(mhandle)) {
+		return;
+	}
+	MeshMod_Mesh* mesh = (MeshMod_Mesh*) MeshMod_MeshHandleToPtr(mhandle);
+	MeshMod_DataContainerTagSetTransitive(mesh->polygons.dc, tag.tag, transitive);
+}
 
 AL2O3_EXTERN_C void* MeshMod_MeshPolygonTagHandleToPtr(MeshMod_MeshHandle mhandle, MeshMod_PolygonTag tag, MeshMod_PolygonHandle handle) {
 	if(!MeshMod_MeshHandleIsValid(mhandle)) {
@@ -630,7 +631,7 @@ AL2O3_EXTERN_C MeshMod_PolygonHandle MeshMod_MeshPolygonTagIterate(MeshMod_MeshH
 	MeshMod_PolygonHandle handle = MeshMod_MeshPolygonIterate(mhandle, previous);
 
 	while (MeshMod_MeshPolygonIsValid(mhandle, handle)) {
-		if (!MeshMod_RegisteryIsDefaultData(mesh->registry, tag.tag, MeshMod_MeshPolygonTagHandleToPtr(mhandle, tag, handle))) {
+		if (!MeshMod_RegistryIsDefaultData(mesh->registry, tag.tag, MeshMod_MeshPolygonTagHandleToPtr(mhandle, tag, handle))) {
 			return handle;
 		}
 		handle = MeshMod_MeshPolygonIterate(mhandle, &handle);
