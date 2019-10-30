@@ -43,6 +43,20 @@ AL2O3_EXTERN_C MeshMod_DataContainer* MeshMod_DataContainerCreate(MeshMod_MeshHa
 AL2O3_EXTERN_C void MeshMod_DataContainerDestroy(MeshMod_DataContainer* dc) {
 	ASSERT(dc);
 
+	MeshMod_RegistryHandle registry = MeshMod_MeshGetRegistry(dc->owner);
+	for (size_t i = 0; i < CADT_BagOfVectorsSize(dc->bag); ++i) {
+		CADT_VectorHandle vh = CADT_BagOfVectorsAt(dc->bag, i);
+		MeshMod_Tag tag = CADT_BagOfVectorsGetKey(dc->bag, i);
+		if(MeshMod_RegistryHasDestroy(registry, tag)) {
+			// destroy each element
+			MeshMod_RegistryDestroyFunc destroyFunc = MeshMod_RegistryGetCommonFunctionTable(registry, tag)->destroyFunc;
+			CADT_VectorHandle vh = CADT_BagOfVectorsLookup(dc->bag, tag);
+			for(size_t i = 0;i < CADT_VectorSize(vh);++i) {
+				destroyFunc(CADT_VectorAt(vh, i));
+			}
+		}
+	}
+
 	CADT_DictU64Destroy(dc->vectorHashs);
 	CADT_DictU64Destroy(dc->userData);
 	Handle_Manager64Destroy(dc->handleManager);

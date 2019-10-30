@@ -25,5 +25,11 @@ AL2O3_EXTERN_C CADT_VectorHandle MeshMod_MeshVertexTagSort(MeshMod_MeshHandle ha
 AL2O3_EXTERN_C CADT_VectorHandle MeshMod_MeshEdgeTagSort(MeshMod_MeshHandle handle, MeshMod_EdgeTag tag, MeshMod_EdgeSortFunc sortFunc);
 AL2O3_EXTERN_C CADT_VectorHandle MeshMod_MeshPolygonTagSort(MeshMod_MeshHandle handle, MeshMod_PolygonTag tag, MeshMod_PolygonSortFunc sortFunc);
 
-// Compute a similarity position ring in MeshMod_VertexSimilarTag user field 'P'
+// Compute a similarity position ring in MeshMod_VertexSimilarTag user field 'P' (single threaded due to sort)
 AL2O3_EXTERN_C void MeshMod_MeshComputeSimilarPositions(MeshMod_MeshHandle handle, float similarity);
+
+AL2O3_EXTERN_C void MeshMod_MeshGenerateEdgeEndVertex(MeshMod_MeshHandle handle);
+
+AL2O3_EXTERN_C void MeshMod_MeshComputeVertex2Edges(MeshMod_MeshHandle handle);
+
+AL2O3_EXTERN_C void MeshMod_MeshComputeSimilarEdges(MeshMod_MeshHandle handle);

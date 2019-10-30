@@ -5,9 +5,12 @@
 #include "render_meshmod/mesh.h"
 
 #define MeshMod_Vertex2EdgesTag MESHMOD_VERTEXTAG('V', 'T', '2', 'E', 'D')
+#define MeshMod_Vertex2EdgesMaxEmbedded 4
 
 typedef struct MeshMod_Vertex2Edges {
 	MeshMod_EdgeHandle *edges;
+	MeshMod_EdgeHandle embedded[MeshMod_Vertex2EdgesMaxEmbedded];
+
 	uint8_t numEdges;
 } MeshMod_Vertex2Edges;
 

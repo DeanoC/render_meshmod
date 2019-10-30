@@ -27,7 +27,10 @@ static char const* Vertex2EdgesDescription() {
 }
 
 static void Vertex2EdgesDestroy(void* element) {
-	MEMORY_FREE(element);
+	MeshMod_Vertex2Edges * v2e = (MeshMod_Vertex2Edges*)element;
+	if(v2e->numEdges >= MeshMod_Vertex2EdgesMaxEmbedded) {
+		MEMORY_FREE(element);
+	}
 }
 
 AL2O3_EXTERN_C void MeshMod_Vertex2EdgesAddToRegistry(MeshMod_RegistryHandle handle) {

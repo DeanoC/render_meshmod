@@ -12,7 +12,7 @@ static bool EdgeSimilarEqual(void const* va, void const* vb, float const epsilon
 {
 	MeshMod_EdgeSimilar const* a = (MeshMod_EdgeSimilar const*)va;
 	MeshMod_EdgeSimilar const* b = (MeshMod_EdgeSimilar const*)vb;
-	return	a->next.handle.handle == b->next.handle.handle;
+	return	Handle_HandleEqual64(a->handle, b->handle);
 }
 
 static char const* EdgeSimilarDescription() {

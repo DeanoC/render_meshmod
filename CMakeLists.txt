@@ -20,7 +20,6 @@ project(${LibName})
 
 file(GLOB_RECURSE Src CONFIGURE_DEPENDS include/*.h include/*.hpp src/*.c src/*.cpp)
 
-
 set(Deps
 		al2o3_platform
 		al2o3_memory

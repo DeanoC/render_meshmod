@@ -4,15 +4,18 @@
 #include "render_meshmod/vertex/basicdata.h"
 #include "render_meshmod/vertex/position.h"
 #include "render_meshmod/vertex/similar.h"
+#include "render_meshmod/vertex/vertex2edges.h"
 #include "render_meshmod/edge/halfedge.h"
+#include "render_meshmod/edge/endvertex.h"
+#include "render_meshmod/edge/similar.h"
 #include "render_meshmod/polygon/tribrep.h"
 #include "render_meshmod/polygon/quadbrep.h"
 #include "render_meshmod/polygon/convexbrep.h"
 #include "render_meshmod/polygon/basicdata.h"
 #include "render_meshmod/data/aabb.h"
 #include "render_meshmod/basicalgos.h"
+#include "render_meshmod/helpers.h"
 
-static MeshMod_PolygonTag const polyU8tag = MeshMod_AddUserDataToPolygonTag(MeshMod_PolygonU8Tag, 0xF);
 
 TEST_CASE("Mesh Position 3D Extents", "[MeshMod BasicAlgos]") {
 	MeshMod_MeshHandle handle = MeshMod_MeshCreate({0}, "Test Mesh");
@@ -171,7 +174,7 @@ static void AddTriAndQuadToMesh(MeshMod_MeshHandle handle) {
 	MeshMod_MeshEdgeTagEnsure(handle, MeshMod_EdgeHalfEdgeTag);
 	MeshMod_MeshPolygonTagEnsure(handle, MeshMod_PolygonTriBRepTag);
 	MeshMod_MeshPolygonTagEnsure(handle, MeshMod_PolygonQuadBRepTag);
-	MeshMod_MeshPolygonTagEnsure(handle, polyU8tag);
+	MeshMod_MeshPolygonTagEnsure(handle, MeshMod_AddUserDataToPolygonTag(MeshMod_PolygonU8Tag, 0xF));
 
 	// 3 vertices, 3 edges, 1 triangle AND
 	// 4 vertices, 4 edges, 1 quad
@@ -198,20 +201,13 @@ static void AddTriAndQuadToMesh(MeshMod_MeshHandle handle) {
 	phandles[0] = MeshMod_MeshPolygonAlloc(handle);
 	phandles[1] = MeshMod_MeshPolygonAlloc(handle);
 
-	auto pos0 =
-			(MeshMod_VertexPosition *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, vhandles[0]);
-	auto pos1 =
-			(MeshMod_VertexPosition *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, vhandles[1]);
-	auto pos2 =
-			(MeshMod_VertexPosition *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, vhandles[2]);
-	auto pos3 =
-			(MeshMod_VertexPosition *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, vhandles[3]);
-	auto pos4 =
-			(MeshMod_VertexPosition *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, vhandles[4]);
-	auto pos5 =
-			(MeshMod_VertexPosition *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, vhandles[5]);
-	auto pos6 =
-			(MeshMod_VertexPosition *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, vhandles[6]);
+	auto pos0 = MeshMod_MeshVertexPositionTagHandleToPtr(handle,vhandles[0], 0);
+	auto pos1 = MeshMod_MeshVertexPositionTagHandleToPtr(handle,vhandles[1], 0);
+	auto pos2 = MeshMod_MeshVertexPositionTagHandleToPtr(handle,vhandles[2], 0);
+	auto pos3 = MeshMod_MeshVertexPositionTagHandleToPtr(handle,vhandles[3], 0);
+	auto pos4 = MeshMod_MeshVertexPositionTagHandleToPtr(handle,vhandles[4], 0);
+	auto pos5 = MeshMod_MeshVertexPositionTagHandleToPtr(handle,vhandles[5], 0);
+	auto pos6 = MeshMod_MeshVertexPositionTagHandleToPtr(handle,vhandles[6], 0);
 
 	*pos0 = {0, 0, 0};
 	*pos1 = {1, 0, 0};
@@ -221,13 +217,13 @@ static void AddTriAndQuadToMesh(MeshMod_MeshHandle handle) {
 	*pos5 = {3, 1, 0};
 	*pos6 = {2, 1, 0};
 
-	auto edge0 = (MeshMod_EdgeHalfEdge *) MeshMod_MeshEdgeTagHandleToPtr(handle, MeshMod_EdgeHalfEdgeTag, ehandles[0]);
-	auto edge1 = (MeshMod_EdgeHalfEdge *) MeshMod_MeshEdgeTagHandleToPtr(handle, MeshMod_EdgeHalfEdgeTag, ehandles[1]);
-	auto edge2 = (MeshMod_EdgeHalfEdge *) MeshMod_MeshEdgeTagHandleToPtr(handle, MeshMod_EdgeHalfEdgeTag, ehandles[2]);
-	auto edge3 = (MeshMod_EdgeHalfEdge *) MeshMod_MeshEdgeTagHandleToPtr(handle, MeshMod_EdgeHalfEdgeTag, ehandles[3]);
-	auto edge4 = (MeshMod_EdgeHalfEdge *) MeshMod_MeshEdgeTagHandleToPtr(handle, MeshMod_EdgeHalfEdgeTag, ehandles[4]);
-	auto edge5 = (MeshMod_EdgeHalfEdge *) MeshMod_MeshEdgeTagHandleToPtr(handle, MeshMod_EdgeHalfEdgeTag, ehandles[5]);
-	auto edge6 = (MeshMod_EdgeHalfEdge *) MeshMod_MeshEdgeTagHandleToPtr(handle, MeshMod_EdgeHalfEdgeTag, ehandles[6]);
+	auto edge0 = MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(handle, ehandles[0], 0);
+	auto edge1 = MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(handle, ehandles[1], 0);
+	auto edge2 = MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(handle, ehandles[2], 0);
+	auto edge3 = MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(handle, ehandles[3], 0);
+	auto edge4 = MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(handle, ehandles[4], 0);
+	auto edge5 = MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(handle, ehandles[5], 0);
+	auto edge6 = MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(handle, ehandles[6], 0);
 
 	edge0->vertex = vhandles[0];
 	edge0->polygon = phandles[0];
@@ -257,52 +253,20 @@ static void AddTriAndQuadToMesh(MeshMod_MeshHandle handle) {
 	polygon1->edge[2] = ehandles[5];
 	polygon1->edge[3] = ehandles[6];
 
+	static MeshMod_PolygonTag const polyU8tag = MeshMod_AddUserDataToPolygonTag(MeshMod_PolygonU8Tag, 0xF);
+
 	// mark in a custom U8 per polygon field a source number (to test post triangulation etc.
-	auto polyUD0 = (uint8_t *) MeshMod_MeshPolygonTagHandleToPtr(handle, polyU8tag, phandles[0]);
+	auto polyUD0 = MeshMod_MeshPolygonU8TagHandleToPtr(handle, phandles[0], 0xF);
 	*polyUD0 = 0;
-	auto polyUD1 = (uint8_t *) MeshMod_MeshPolygonTagHandleToPtr(handle, polyU8tag, phandles[1]);
+	auto polyUD1 = MeshMod_MeshPolygonU8TagHandleToPtr(handle, phandles[1], 0xF);
 	*polyUD1 = 1;
-
-	// check the triangle
-	MeshMod_PolygonHandle piterator0 = MeshMod_MeshPolygonTagIterate(handle, MeshMod_PolygonTriBRepTag, NULL);
-	uint64_t triCount = 0;
-	while (MeshMod_MeshPolygonIsValid(handle, piterator0)) {
-
-		auto poly =
-				(MeshMod_PolygonTriBRep *) MeshMod_MeshPolygonTagHandleToPtr(handle, MeshMod_PolygonTriBRepTag, piterator0);
-		REQUIRE(poly);
-		REQUIRE(poly->edge[0].handle.handle == ehandles[0].handle.handle);
-		REQUIRE(poly->edge[1].handle.handle == ehandles[1].handle.handle);
-		REQUIRE(poly->edge[2].handle.handle == ehandles[2].handle.handle);
-		triCount++;
-		piterator0 = MeshMod_MeshPolygonTagIterate(handle, MeshMod_PolygonTriBRepTag, &piterator0);
-	}
-	REQUIRE(triCount == 1);
-
-	// check the quad
-	MeshMod_PolygonHandle piterator1 = MeshMod_MeshPolygonTagIterate(handle, MeshMod_PolygonQuadBRepTag, NULL);
-	uint64_t quadCount = 0;
-	while (MeshMod_MeshPolygonIsValid(handle, piterator1)) {
-
-		auto poly =
-				(MeshMod_PolygonQuadBRep *) MeshMod_MeshPolygonTagHandleToPtr(handle, MeshMod_PolygonQuadBRepTag, piterator1);
-		REQUIRE(poly);
-		REQUIRE(poly->edge[0].handle.handle == ehandles[3].handle.handle);
-		REQUIRE(poly->edge[1].handle.handle == ehandles[4].handle.handle);
-		REQUIRE(poly->edge[2].handle.handle == ehandles[5].handle.handle);
-		REQUIRE(poly->edge[3].handle.handle == ehandles[6].handle.handle);
-		quadCount++;
-		piterator1 = MeshMod_MeshPolygonTagIterate(handle, MeshMod_PolygonQuadBRepTag, &piterator1);
-	}
-	REQUIRE(quadCount == 1);
-
 }
 
 static void Add2ConvexPolygons(MeshMod_MeshHandle handle) {
 	MeshMod_MeshVertexTagEnsure(handle, MeshMod_VertexPositionTag);
 	MeshMod_MeshEdgeTagEnsure(handle, MeshMod_EdgeHalfEdgeTag);
 	MeshMod_MeshPolygonTagEnsure(handle, MeshMod_PolygonConvexBRepTag);
-	MeshMod_MeshPolygonTagEnsure(handle, polyU8tag);
+	MeshMod_MeshPolygonTagEnsure(handle, MeshMod_AddUserDataToPolygonTag(MeshMod_PolygonU8Tag, 0xF));
 
 	// 5 vertices, 5 edges, 1 convex polygon
 	MeshMod_VertexHandle vhandles[5];
@@ -374,25 +338,22 @@ static void Add2ConvexPolygons(MeshMod_MeshHandle handle) {
 	edge4->vertex = vhandles[4];
 	edge4->polygon = phandles[0];
 
-	auto polygon0 = (MeshMod_PolygonConvexBRep *) MeshMod_MeshPolygonTagHandleToPtr(handle,
-																																									MeshMod_PolygonConvexBRepTag,
-																																									phandles[0]);
+	auto polygon0 = MeshMod_MeshPolygonConvexBRepTagHandleToPtr(handle, phandles[0], 0);
 	polygon0->numEdges = 5;
 	polygon0->edge[0] = ehandles[0];
 	polygon0->edge[1] = ehandles[1];
 	polygon0->edge[2] = ehandles[2];
 	polygon0->edge[3] = ehandles[3];
 	polygon0->edge[4] = ehandles[4];
-	auto polyUD0 = (uint8_t *) MeshMod_MeshPolygonTagHandleToPtr(handle, polyU8tag, phandles[0]);
+	auto polyUD0 = MeshMod_MeshPolygonU8TagHandleToPtr(handle, phandles[0], 0xF);
 	*polyUD0 = 0;
 
 	uint64_t polyCount = 0;
 	MeshMod_PolygonHandle piterator = MeshMod_MeshPolygonIterate(handle, NULL);
 	while (MeshMod_MeshPolygonIsValid(handle, piterator)) {
 
-		auto poly = (MeshMod_PolygonConvexBRep *) MeshMod_MeshPolygonTagHandleToPtr(handle,
-																																								MeshMod_PolygonConvexBRepTag,
-																																								piterator);
+		auto poly = MeshMod_MeshPolygonConvexBRepTagHandleToPtr(handle, piterator, 0);
+
 		REQUIRE(poly);
 		REQUIRE(poly->numEdges == 5);
 		REQUIRE(poly->edge[0].handle.handle == ehandles[0].handle.handle);
@@ -409,7 +370,7 @@ static void Add2ConvexPolygons(MeshMod_MeshHandle handle) {
 	uint64_t edgeCount = 0;
 	while (MeshMod_MeshEdgeIsValid(handle, eiterator)) {
 
-		auto edge = (MeshMod_EdgeHalfEdge *) MeshMod_MeshEdgeTagHandleToPtr(handle, MeshMod_EdgeHalfEdgeTag, eiterator);
+		auto edge = MeshMod_MeshEdgeHalfEdgeTagHandleToPtr(handle,eiterator, 0);
 		REQUIRE(edge);
 		REQUIRE(edge->polygon.handle.handle == phandles[0].handle.handle);
 		REQUIRE(edge->vertex.handle.handle == vhandles[edgeCount].handle.handle);
@@ -419,15 +380,13 @@ static void Add2ConvexPolygons(MeshMod_MeshHandle handle) {
 	REQUIRE(edgeCount == 5);
 
 	MeshMod_PolygonHandle phandleCopy = MeshMod_MeshPolygonDuplicate(handle, phandles[0]);
-	auto polyUD1 = (uint8_t *) MeshMod_MeshPolygonTagHandleToPtr(handle, polyU8tag, phandleCopy);
+	auto polyUD1 = MeshMod_MeshPolygonU8TagHandleToPtr(handle, phandleCopy, 0xF);
 	*polyUD1 = 1;
 	polyCount = 0;
 	piterator = MeshMod_MeshPolygonIterate(handle, NULL);
 	while (MeshMod_MeshPolygonIsValid(handle, piterator)) {
 
-		auto poly = (MeshMod_PolygonConvexBRep *) MeshMod_MeshPolygonTagHandleToPtr(handle,
-																																								MeshMod_PolygonConvexBRepTag,
-																																								piterator);
+		auto poly = MeshMod_MeshPolygonConvexBRepTagHandleToPtr(handle, piterator, 0);
 		REQUIRE(poly);
 		REQUIRE(poly->numEdges == 5);
 		REQUIRE(poly->edge[0].handle.handle == ehandles[0].handle.handle);
@@ -454,10 +413,8 @@ TEST_CASE("Mesh tri and quad to convex polygons", "[MeshMod BasicAlgos]") {
 	MeshMod_PolygonHandle piterator = MeshMod_MeshPolygonIterate(handle, NULL);
 	while (MeshMod_MeshPolygonIsValid(handle, piterator)) {
 
-		auto poly = (MeshMod_PolygonConvexBRep *) MeshMod_MeshPolygonTagHandleToPtr(handle,
-																																								MeshMod_PolygonConvexBRepTag,
-																																								piterator);
-		auto polyUD = (uint8_t *) MeshMod_MeshPolygonTagHandleToPtr(handle, polyU8tag, piterator);
+		auto poly = MeshMod_MeshPolygonConvexBRepTagHandleToPtr(handle, piterator, 0);
+		auto polyUD = MeshMod_MeshPolygonU8TagHandleToPtr(handle, piterator, 0xF);
 		REQUIRE(poly);
 		REQUIRE(polyUD);
 
@@ -492,9 +449,8 @@ TEST_CASE("Mesh tri and quad triangulate", "[MeshMod BasicAlgos]") {
 	MeshMod_PolygonHandle piterator = MeshMod_MeshPolygonIterate(handle, NULL);
 	while (MeshMod_MeshPolygonIsValid(handle, piterator)) {
 
-		auto tri =
-				(MeshMod_PolygonTriBRep *) MeshMod_MeshPolygonTagHandleToPtr(handle, MeshMod_PolygonTriBRepTag, piterator);
-		auto triUD = (uint8_t *) MeshMod_MeshPolygonTagHandleToPtr(handle, polyU8tag, piterator);
+		auto tri = MeshMod_MeshPolygonTriBRepTagHandleToPtr(handle, piterator, 0);
+		auto triUD = MeshMod_MeshPolygonU8TagHandleToPtr(handle, piterator, 0xF);
 		REQUIRE(tri);
 		REQUIRE(triUD);
 
@@ -534,9 +490,8 @@ TEST_CASE("Mesh 2 convex to triangles", "[MeshMod BasicAlgos]") {
 	MeshMod_PolygonHandle piterator = MeshMod_MeshPolygonTagIterate(handle, MeshMod_PolygonTriBRepTag, NULL);
 	while (MeshMod_MeshPolygonIsValid(handle, piterator)) {
 
-		auto poly =
-				(MeshMod_PolygonTriBRep *) MeshMod_MeshPolygonTagHandleToPtr(handle, MeshMod_PolygonTriBRepTag, piterator);
-		auto polyUD = (uint8_t *) MeshMod_MeshPolygonTagHandleToPtr(handle, polyU8tag, piterator);
+		auto poly = MeshMod_MeshPolygonTriBRepTagHandleToPtr(handle, piterator, 0);
+		auto polyUD = MeshMod_MeshPolygonU8TagHandleToPtr(handle, piterator, 0xF);
 		REQUIRE(poly);
 		REQUIRE(polyUD);
 		REQUIRE(((*polyUD == 0) || (*polyUD == 1)));
@@ -551,11 +506,11 @@ TEST_CASE("Mesh 2 convex to triangles", "[MeshMod BasicAlgos]") {
 
 // sort biggest x first index, biggest y second
 static int VertexPositionXSort(MeshMod_MeshHandle handle, MeshMod_VertexHandle ah, MeshMod_VertexHandle bh) {
-	auto a = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, ah);
-	auto b = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, bh);
+	auto const a = MeshMod_MeshVertexPositionTagHandleToPtr(handle, ah, 0);
+	auto const b = MeshMod_MeshVertexPositionTagHandleToPtr(handle, bh, 0);
 
-	int const xd = (int) (b->x * 10000.0f) - (a->x * 10000.0f);
-	int const yd = (int) (b->y * 10000.0f) - (a->y * 10000.0f);
+	int const xd = (int) ((b->x * 10000.0f) - (a->x * 10000.0f));
+	int const yd = (int) ((b->y * 10000.0f) - (a->y * 10000.0f));
 
 	if (xd == 0) {
 		return yd;
@@ -572,7 +527,7 @@ TEST_CASE("Mesh sort vertex", "[MeshMod BasicAlgos]") {
 	REQUIRE(CADT_VectorSize(sortMap) == 7);
 	for (size_t i = 0; i < CADT_VectorSize(sortMap); ++i) {
 		MeshMod_VertexHandle vh = *(MeshMod_VertexHandle *) CADT_VectorAt(sortMap, i);
-		auto v = (MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, vh);
+		auto v = MeshMod_MeshVertexPositionTagHandleToPtr(handle,vh, 0);
 		switch (i) {
 			case 0: {
 				REQUIRE(v->x == Approx(3.0f));
@@ -633,18 +588,15 @@ TEST_CASE("Mesh similar position compute", "[MeshMod BasicAlgos]") {
 //	*pos5 = {3, 1, 0};
 //	*pos6 = {2, 1, 0};
 	AddTriAndQuadToMesh(handle);
+
 	MeshMod_VertexHandle new7 = MeshMod_MeshVertexAlloc(handle);
 	MeshMod_VertexHandle new8 = MeshMod_MeshVertexAlloc(handle);
 	MeshMod_VertexHandle new9 = MeshMod_MeshVertexAlloc(handle);
 	MeshMod_VertexHandle new10 = MeshMod_MeshVertexAlloc(handle);
-	auto pos7 =
-			(MeshMod_VertexPosition *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, new7);
-	auto pos8 =
-			(MeshMod_VertexPosition*) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, new8);
-	auto pos9 =
-			(MeshMod_VertexPosition*) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, new9);
-	auto pos10 =
-			(MeshMod_VertexPosition*) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, new10);
+	auto pos7 = MeshMod_MeshVertexPositionTagHandleToPtr(handle, new7, 0);
+	auto pos8 = MeshMod_MeshVertexPositionTagHandleToPtr(handle, new8, 0);
+	auto pos9 = MeshMod_MeshVertexPositionTagHandleToPtr(handle, new9, 0);
+	auto pos10 = MeshMod_MeshVertexPositionTagHandleToPtr(handle, new10, 0);
 	*pos7 = { 0, 0, 0 };
 	*pos8 = { 2.001f, 1, 0 };
 	*pos9 = { 2.01f, 1, 2 };
@@ -652,18 +604,14 @@ TEST_CASE("Mesh similar position compute", "[MeshMod BasicAlgos]") {
 
 	MeshMod_MeshComputeSimilarPositions(handle, 0.1f);
 
-	MeshMod_VertexTag const tag = MeshMod_AddUserDataToVertexTag(MeshMod_VertexSimilarTag, 'P');
-
 	MeshMod_VertexHandle viterator = MeshMod_MeshVertexTagIterate(handle, MeshMod_VertexPositionTag, NULL);
 	size_t vertexCount = 0;
 	MeshMod_VertexHandle handle0 = {0};
 	MeshMod_VertexHandle handle6 = {0};
 	while (MeshMod_MeshVertexIsValid(handle, viterator)) {
 
-		auto v =
-				(MeshMod_VertexPosition const *) MeshMod_MeshVertexTagHandleToPtr(handle, MeshMod_VertexPositionTag, viterator);
-		auto s =
-				(MeshMod_VertexSimilar const *) MeshMod_MeshVertexTagHandleToPtr(handle, tag, viterator);
+		auto v = MeshMod_MeshVertexPositionTagHandleToPtr(handle,viterator, 0);
+		auto s = MeshMod_MeshVertexSimilarTagHandleToPtr(handle, viterator, 'P');
 
 		switch (vertexCount) {
 			case 0: {
@@ -673,6 +621,7 @@ TEST_CASE("Mesh similar position compute", "[MeshMod BasicAlgos]") {
 				REQUIRE(s->handle.handle != viterator.handle.handle);
 				handle0 = viterator;
 				REQUIRE(s->handle.handle == new7.handle.handle);
+				REQUIRE(MeshMod_HelperAreVertexPositionsSimilar(handle, viterator, new7));
 				break;
 			}
 			case 1: {
@@ -680,6 +629,7 @@ TEST_CASE("Mesh similar position compute", "[MeshMod BasicAlgos]") {
 				REQUIRE(v->y == Approx(0.0f));
 				REQUIRE(v->z == Approx(0.0f));
 				REQUIRE(s->handle.handle == viterator.handle.handle);
+				REQUIRE(!MeshMod_HelperAreVertexPositionsSimilar(handle, viterator, new7));
 				break;
 			}
 			case 2: {
@@ -716,6 +666,8 @@ TEST_CASE("Mesh similar position compute", "[MeshMod BasicAlgos]") {
 				REQUIRE(v->z == Approx(0.0f));
 				REQUIRE(s->handle.handle == new10.handle.handle);
 				handle6 = viterator;
+				REQUIRE(MeshMod_HelperAreVertexPositionsSimilar(handle, viterator, new10));
+				REQUIRE(MeshMod_HelperAreVertexPositionsSimilar(handle, viterator, new8));
 				break;
 			}
 			case 7: {
@@ -754,4 +706,223 @@ TEST_CASE("Mesh similar position compute", "[MeshMod BasicAlgos]") {
 	}
 
 	MeshMod_MeshDestroy(handle);
+}
+
+TEST_CASE("Mesh vertex 2 edge compute", "[MeshMod BasicAlgos]") {
+	MeshMod_MeshHandle handle = MeshMod_MeshCreate({0}, "Tri and Quad");
+
+	AddTriAndQuadToMesh(handle);
+
+	MeshMod_MeshComputeVertex2Edges(handle);
+
+	MeshMod_VertexHandle viterator = MeshMod_MeshVertexTagIterate(handle, MeshMod_VertexPositionTag, NULL);
+	size_t vertexCount = 0;
+	while (MeshMod_MeshVertexIsValid(handle, viterator)) {
+
+		auto v2e = MeshMod_MeshVertex2EdgesTagHandleToPtr(handle,viterator, 0);
+
+		switch (vertexCount) {
+			case 0: {
+				REQUIRE(v2e->numEdges == 2);
+				REQUIRE(v2e->edges[0].handle.handle == 2); // incoming
+				REQUIRE(v2e->edges[1].handle.handle == (Handle_MaxHandles64 + 1)); // zero is a weird case... out
+				break;
+			}
+			case 1: {
+				REQUIRE(v2e->numEdges == 2);
+				REQUIRE(v2e->edges[0].handle.handle == (Handle_MaxHandles64 + 1)); // zero is a weird case... in
+				REQUIRE(v2e->edges[1].handle.handle == 1); // out
+				break;
+			}
+			case 2: {
+				REQUIRE(v2e->numEdges == 2);
+				REQUIRE(v2e->edges[0].handle.handle == 1); // in
+				REQUIRE(v2e->edges[1].handle.handle == 2); // out
+				break;
+			}
+			case 3: {
+				REQUIRE(v2e->numEdges == 2);
+				REQUIRE(v2e->edges[0].handle.handle == 6); // in
+				REQUIRE(v2e->edges[1].handle.handle == 3); // out
+				break;
+			}
+			case 4: {
+				REQUIRE(v2e->numEdges == 2);
+				REQUIRE(v2e->edges[0].handle.handle == 3); // in
+				REQUIRE(v2e->edges[1].handle.handle == 4); // out
+				break;
+			}
+			case 5: {
+				REQUIRE(v2e->numEdges == 2);
+				REQUIRE(v2e->edges[0].handle.handle == 4); // in
+				REQUIRE(v2e->edges[1].handle.handle == 5); // out
+				break;
+			}
+			case 6: {
+				REQUIRE(v2e->numEdges == 2);
+				REQUIRE(v2e->edges[0].handle.handle == 5); // in
+				REQUIRE(v2e->edges[1].handle.handle == 6); // out
+				break;
+			}
+
+			default: break;
+		}
+		vertexCount++;
+		viterator = MeshMod_MeshVertexTagIterate(handle, MeshMod_VertexPositionTag, &viterator);
+	}
+
+	MeshMod_MeshDestroy(handle);
+}
+
+TEST_CASE("Mesh generate edge end vertex", "[MeshMod BasicAlgos]") {
+	MeshMod_MeshHandle handle = MeshMod_MeshCreate({0}, "Tri and Quad");
+
+	AddTriAndQuadToMesh(handle);
+
+	MeshMod_MeshGenerateEdgeEndVertex(handle);
+
+	MeshMod_EdgeHandle eiterator = MeshMod_MeshEdgeTagIterate(handle, MeshMod_EdgeEndVertexTag, NULL);
+	size_t edgeCount = 0;
+	while (MeshMod_MeshEdgeIsValid(handle, eiterator)) {
+
+		auto endvertex = MeshMod_MeshEdgeEndVertexTagHandleToPtr(handle,eiterator, 0);
+
+		switch (edgeCount) {
+			case 0: {
+				REQUIRE(endvertex->handle.handle == 1);
+				break;
+			}
+			case 1: {
+				REQUIRE(endvertex->handle.handle == 2);
+				break;
+			}
+			case 2: {
+				REQUIRE(endvertex->handle.handle == (Handle_MaxHandles64+1));
+				break;
+			}
+			case 3: {
+				REQUIRE(endvertex->handle.handle == 4);
+				break;
+			}
+			case 4: {
+				REQUIRE(endvertex->handle.handle == 5);
+				break;
+			}
+			case 5: {
+				REQUIRE(endvertex->handle.handle == 6);
+				break;
+			}
+			case 6: {
+				REQUIRE(endvertex->handle.handle == 3);
+				break;
+			}
+
+			default: break;
+		}
+		edgeCount++;
+		eiterator = MeshMod_MeshEdgeTagIterate(handle, MeshMod_EdgeEndVertexTag, &eiterator);
+	}
+
+	MeshMod_MeshDestroy(handle);
+}
+
+TEST_CASE("Mesh similar edge compute 1", "[MeshMod BasicAlgos]") {
+	MeshMod_MeshHandle handle = MeshMod_MeshCreate({0}, "Tri and Quad");
+
+	AddTriAndQuadToMesh(handle);
+
+	MeshMod_MeshComputeSimilarEdges(handle);
+
+	MeshMod_EdgeHandle eiterator = MeshMod_MeshEdgeTagIterate(handle, MeshMod_EdgeEndVertexTag, NULL);
+	while (MeshMod_MeshEdgeIsValid(handle, eiterator)) {
+
+		auto similarEdges = MeshMod_MeshEdgeSimilarTagHandleToPtr(handle,eiterator, 0);
+		REQUIRE(similarEdges->handle.handle == eiterator.handle.handle);
+		eiterator = MeshMod_MeshEdgeTagIterate(handle, MeshMod_EdgeEndVertexTag, &eiterator);
+	}
+	MeshMod_MeshDestroy(handle);
+}
+
+
+TEST_CASE("Mesh similar edge compute 2", "[MeshMod BasicAlgos]") {
+	MeshMod_MeshHandle handle = MeshMod_MeshCreate({0}, "Tri and Quad");
+
+	// add twice for similarity checks
+	AddTriAndQuadToMesh(handle);
+	AddTriAndQuadToMesh(handle);
+
+	MeshMod_MeshComputeSimilarEdges(handle);
+
+	MeshMod_EdgeHandle edgeHandles[7 * 2];
+
+	MeshMod_EdgeHandle eiterator = MeshMod_MeshEdgeTagIterate(handle, MeshMod_EdgeEndVertexTag, NULL);
+	size_t edgeCount = 0;
+	while (MeshMod_MeshEdgeIsValid(handle, eiterator)) {
+
+		auto similarEdges = MeshMod_MeshEdgeSimilarTagHandleToPtr(handle,eiterator, 0);
+		REQUIRE(similarEdges->handle.handle != eiterator.handle.handle);
+		edgeHandles[edgeCount++] = eiterator;
+
+		eiterator = MeshMod_MeshEdgeTagIterate(handle, MeshMod_EdgeEndVertexTag, &eiterator);
+	}
+	for(size_t i = 0;i < edgeCount/2;i++) {
+
+	}
+
+	MeshMod_MeshDestroy(handle);
+}
+
+TEST_CASE("Mesh similar edge compute 3", "[MeshMod BasicAlgos]") {
+	MeshMod_MeshHandle handle = MeshMod_MeshCreate({0}, "Tri and Quad");
+
+	// do it thrice so we have similar (same) edges
+	AddTriAndQuadToMesh(handle);
+	AddTriAndQuadToMesh(handle);
+	AddTriAndQuadToMesh(handle);
+
+	MeshMod_MeshComputeSimilarEdges(handle);
+
+	MeshMod_EdgeHandle edges[7*3];
+	uint64_t edgeCount = 0;
+
+	MeshMod_EdgeHandle eiterator = MeshMod_MeshEdgeTagIterate(handle, MeshMod_EdgeHalfEdgeTag, NULL);
+	while (MeshMod_MeshEdgeIsValid(handle, eiterator)) {
+
+		edges[edgeCount++] = eiterator;
+		eiterator = MeshMod_MeshEdgeTagIterate(handle, MeshMod_EdgeHalfEdgeTag, &eiterator);
+	}
+	REQUIRE(edgeCount == 21);
+
+	for(uint64_t i = 0; i < edgeCount/3;++i) {
+		// should be 3 edges in each similar, and should be some permutation of i + 0, i + 7, i + 14
+		bool found[3] = { false, false, false };
+		int similarCount = 0;
+		MeshMod_EdgeSimilar const* similar = MeshMod_MeshEdgeSimilarTagHandleToPtr(handle, edges[i], 0);
+		while(!Handle_HandleEqual64(similar->handle, edges[i + 0].handle)) {
+			similarCount++;
+
+			REQUIRE_FALSE(Handle_HandleEqual64(similar->handle, edges[i + 0].handle));
+
+			if(Handle_HandleEqual64(similar->handle, edges[i + 7].handle)) {
+				REQUIRE_FALSE(found[1]);
+				found[1] = true;
+			} else if(Handle_HandleEqual64(similar->handle, edges[i + 14].handle)) {
+				REQUIRE_FALSE(found[2]);
+				found[2] = true;
+			}
+			similar = MeshMod_MeshEdgeSimilarTagHandleToPtr(handle, *similar, 0);
+			if(Handle_HandleEqual64(similar->handle, edges[i + 0].handle)) {
+				REQUIRE_FALSE(found[0]);
+				found[0] = true;
+				similarCount++;
+			}
+		}
+		REQUIRE(similarCount == 3);
+		REQUIRE(found[0]);
+		REQUIRE(found[1]);
+		REQUIRE(found[2]);
+	}
+
+	MeshMod_MeshDestroy(handle);
+
 }

@@ -21,4 +21,5 @@ void MeshMod_AddEdgeDefaultsToTagRegistry(MeshMod_RegistryHandle handle) {
 	REGISTER_TYPE(HalfEdge)
 	REGISTER_TYPE(Ring)
 	REGISTER_TYPE(Similar)
+	REGISTER_TYPE(EndVertex)
 }

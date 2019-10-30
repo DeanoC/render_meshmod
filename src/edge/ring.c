@@ -12,7 +12,7 @@ static bool EdgeRingEqual(void const* va, void const* vb, float const epsilon)
 {
 	MeshMod_EdgeRing const* a = (MeshMod_EdgeRing const*)va;
 	MeshMod_EdgeRing const* b = (MeshMod_EdgeRing const*)vb;
-	return	a->next.handle.handle == b->next.handle.handle;
+	return	Handle_HandleEqual64(a->handle, b->handle);
 }
 
 static char const* EdgeRingDescription() {
