@@ -49,7 +49,9 @@ AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshCreate(MeshMod_RegistryHandle regi
 }
 
 AL2O3_EXTERN_C void MeshMod_MeshDestroy(MeshMod_MeshHandle handle) {
-	ASSERT(MeshMod_MeshHandleIsValid(handle));
+	if(!MeshMod_MeshHandleIsValid(handle)) {
+		return;
+	}
 	MeshMod_Mesh* mesh = MeshMod_MeshHandleToPtr(handle);
 
 	for (size_t i = 0; i < CADT_VectorSize(mesh->arbitaryDataKeys); ++i) {
@@ -75,8 +77,15 @@ AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshClone(MeshMod_MeshHandle handle) {
 	static MeshMod_MeshHandle const invalid = {0};
 
 	ASSERT(MeshMod_MeshHandleIsValid(handle));
+
 	MeshMod_Mesh const* src = MeshMod_MeshHandleToPtr(handle);
+
 	MeshMod_MeshHandle newHandle = MeshMod_MeshHandleAlloc();
+	if(!MeshMod_MeshHandleIsValid(newHandle)) {
+		MeshMod_MeshDestroy(newHandle);
+		return invalid;
+	}
+
 	MeshMod_Mesh* dst = MeshMod_MeshHandleToPtr(newHandle);
 
 	dst->name = MEMORY_MALLOC(strlen(src->name) + 1);
@@ -84,6 +93,7 @@ AL2O3_EXTERN_C MeshMod_MeshHandle MeshMod_MeshClone(MeshMod_MeshHandle handle) {
 		MeshMod_MeshDestroy(newHandle);
 		return invalid;
 	}
+
 	strcpy((char*)dst->name, src->name);
 
 	if(src->ownRegistry) {

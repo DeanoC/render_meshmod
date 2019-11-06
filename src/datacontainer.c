@@ -43,6 +43,11 @@ AL2O3_EXTERN_C MeshMod_DataContainer* MeshMod_DataContainerCreate(MeshMod_MeshHa
 AL2O3_EXTERN_C void MeshMod_DataContainerDestroy(MeshMod_DataContainer* dc) {
 	ASSERT(dc);
 
+	Handle_Manager64Destroy(dc->handleManager);
+	CADT_DictU64Destroy(dc->userData);
+	CADT_DictU64Destroy(dc->vectorHashs);
+
+
 	MeshMod_RegistryHandle registry = MeshMod_MeshGetRegistry(dc->owner);
 	for (size_t i = 0; i < CADT_BagOfVectorsSize(dc->bag); ++i) {
 		CADT_VectorHandle vh = CADT_BagOfVectorsAt(dc->bag, i);
@@ -57,16 +62,17 @@ AL2O3_EXTERN_C void MeshMod_DataContainerDestroy(MeshMod_DataContainer* dc) {
 		}
 	}
 
-	CADT_DictU64Destroy(dc->vectorHashs);
-	CADT_DictU64Destroy(dc->userData);
-	Handle_Manager64Destroy(dc->handleManager);
 	CADT_BagOfVectorsDestroy(dc->bag);
+
 	MEMORY_FREE(dc);
 }
 
 AL2O3_EXTERN_C MeshMod_DataContainer* MeshMod_DataContainerClone(MeshMod_DataContainer* src, MeshMod_MeshHandle owner) {
-	MeshMod_DataContainer* dst = MeshMod_DataContainerCreate(owner, src->containerType);
+	MeshMod_DataContainer* dst = (MeshMod_DataContainer*)MEMORY_CALLOC(1, sizeof(MeshMod_DataContainer));
+	if (dst == NULL) return NULL;
 
+	dst->owner = owner;
+	dst->containerType = src->containerType;
 	dst->vectorHashs = CADT_DictU64Clone(src->vectorHashs);
 	dst->userData = CADT_DictU64Clone(src->userData);
 	dst->handleManager = Handle_Manager64Clone(src->handleManager);

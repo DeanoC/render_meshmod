@@ -135,18 +135,18 @@ AL2O3_EXTERN_C void MeshMod_MeshTrianglate(MeshMod_MeshHandle handle) {
 																																		 NULL);
 
 		while (MeshMod_MeshPolygonIsValid(handle, quadHandle)) {
+			MeshMod_PolygonHandle newTriHandle = MeshMod_MeshPolygonDuplicate(handle, quadHandle);
+			MeshMod_MeshPolygonTagHandleToDefault(handle, MeshMod_PolygonQuadBRepTag, newTriHandle);
+
 			MeshMod_PolygonQuadBRep const *quadData = MeshMod_MeshPolygonQuadBRepTagHandleToPtr(handle, quadHandle, 0);
 			MeshMod_PolygonTriBRep *triData0 = MeshMod_MeshPolygonTriBRepTagHandleToPtr(handle, quadHandle, 0);
+			MeshMod_PolygonTriBRep *triData1 = MeshMod_MeshPolygonTriBRepTagHandleToPtr(handle, newTriHandle, 0);
 
 			triData0->edge[0] = quadData->edge[0];
 			triData0->edge[1] = quadData->edge[1];
 			triData0->edge[2] = quadData->edge[2];
-			MeshMod_PolygonHandle newTriHandle = MeshMod_MeshPolygonDuplicate(handle, quadHandle);
-			MeshMod_MeshPolygonTagHandleToDefault(handle, MeshMod_PolygonQuadBRepTag, newTriHandle);
 			MeshMod_EdgeHandle nedge2 = MeshMod_MeshEdgeDuplicate(handle, quadData->edge[2]);
 			MeshMod_EdgeHandle nedge0 = MeshMod_MeshEdgeDuplicate(handle, quadData->edge[0]);
-
-			MeshMod_PolygonTriBRep *triData1 = MeshMod_MeshPolygonTriBRepTagHandleToPtr(handle, newTriHandle, 0);
 			triData1->edge[0] = nedge2;
 			triData1->edge[1] = quadData->edge[3];
 			triData1->edge[2] = nedge0;
