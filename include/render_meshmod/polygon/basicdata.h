@@ -48,3 +48,7 @@ MESHMOD_PT_VECTOR_TYPE(Vec4D)
 
 #undef MESHMOD_PT_TYPE
 #undef MESHMOD_PT_VECTOR_TYPE
+
+// we use user tag P for a polygon Id field rather than a completely new tag type
+#define MeshMod_PolygonIdUserTag 'P'
+#define MeshMod_PolygonIdTag MeshMod_AddUserDataToPolygonTag(MeshMod_PolygonU32Tag, 'P')
