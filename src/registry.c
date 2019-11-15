@@ -62,7 +62,9 @@ AL2O3_EXTERN_C MeshMod_RegistryHandle MeshMod_RegistryCreateWithDefaults() {
 }
 
 AL2O3_EXTERN_C void MeshMod_RegistryDestroy(MeshMod_RegistryHandle handle) {
-	ASSERT(MeshMod_RegistryHandleIsValid(handle));
+	if(!MeshMod_RegistryHandleIsValid(handle)) {
+		return;
+	}
 	MeshMod_Registry* reg = MeshMod_RegistryHandleToPtr(handle);
 
 	CADT_DictU64Destroy(reg->tagDictionary);
